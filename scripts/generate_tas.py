@@ -9,8 +9,8 @@ import yaml
 TAS      = [ta['github'] for ta in yaml.safe_load(open('static/yaml/tas.yaml'))]
 STUDENTS = []
 
-for student in csv.DictReader(open('static/csv/students.csv', 'r')):
-    STUDENTS.append(student['Netid'])
+for student in open('static/csv/students.csv', 'r'):
+    STUDENTS.append(student.strip())
 
 CONFLICTS = dict(
     (ta['github'], ta['conflicts'])
