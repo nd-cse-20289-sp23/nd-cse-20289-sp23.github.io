@@ -92,7 +92,7 @@ body:       |
 
       :::bash
       $ python3 -V
-      Python 3.10.6
+      Python 3.10.5
 
   This will be necessary for the `.scripts/check.py` script in your
   **assignments** repository.
