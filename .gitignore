@@ -1,4 +1,5 @@
 pages/*.html
 static/csv
+docs/static/csv
 *.pyc
 *.swp
