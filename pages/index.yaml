@@ -245,7 +245,7 @@ body:       |
                       {% set item['label'] = 'warning' %}
                     {% elif item['name'].lower().startswith('panopto') %}
                       {% set item['label'] = 'info' %}
-                    {% elif item['name'].lower().startswith('notebook') %}
+                    {% elif item['name'].lower().startswith('slides') %}
                       {% set item['label'] = 'success' %}
                     {% elif item['name'].lower().startswith('twitch') %}
                       {% set item['label'] = 'info' %}
