@@ -1,6 +1,9 @@
 title:      "Homework 01: Command Line Adventure"
 icon:       fa-code
-navigation: []
+navigation:
+  - name: "Home"
+    link: "index.html"
+    icon: "fa-linux"
 internal:
 external:
 body:       |
