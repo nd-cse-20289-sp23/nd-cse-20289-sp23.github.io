@@ -80,8 +80,8 @@ body:       |
   ## Python 3
 
   Throughout the semester, we will be using [Python 3] for a variety of
-  purposes.  Because the student machines do not have [Python 3] by default,
-  you will need to add the following line to your `~/.bashrc` file:
+  purposes.  Because the student machines an older version of [Python 3] by
+  default, you will need to add the following line to your `~/.bashrc` file:
 
       :::bash
       export PATH=/escnfs/home/pbui/pub/pkgsrc/bin:$PATH
