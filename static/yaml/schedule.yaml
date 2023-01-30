@@ -62,6 +62,8 @@
         items:
           - name:       Slides 07
             link:       https://docs.google.com/presentation/d/1_xtgw-pNOw-MIulAphb3r02ged1hO2FnIc_evaJigbI/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=3f4923ba-7016-48c7-a53a-af9a01369cdf
 
       - date:           Wed 02/01
         topics:         Control Flow, Command Line Arguments
