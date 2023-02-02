@@ -8,10 +8,9 @@ body:       |
   The goal of this homework assignment is to allow you to practice [shell
   scripting] and explore [networking] in a [Unix] environment.
 
-  For this assignment, record your responses to the following activities in the
-  `README.md` file in the `homework02` folder of your **assignments** [GitHub]
-  repository along with any other scripts you create and push your work by
-  **noon Saturday, February 04**.
+  For this assignment, you are to do your work in the `homework02` folder of of
+  your **assignments** [GitHub] repository and push your work by **noon
+  Saturday, February 04**.
 
   [Unix]:               https://en.wikipedia.org/wiki/Unix
   [GitHub]:             https://gitlab.com
