@@ -4,6 +4,7 @@ navigation:
   - name: "Home"
     link: "index.html"
     icon: "fa-linux"internal:
+internal:
 external:
 body:       |
 
