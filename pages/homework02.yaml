@@ -1,7 +1,9 @@
 title:      "Homework 02: Meet the Oracle"
 icon:       fa-code
-navigation: []
-internal:
+navigation:
+  - name: "Home"
+    link: "index.html"
+    icon: "fa-linux"internal:
 external:
 body:       |
 
