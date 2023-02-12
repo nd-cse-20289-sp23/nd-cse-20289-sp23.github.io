@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<title>Homework 04: RPN, Unique</title>
+
+	<!-- Bootstrap core CSS -->
+	<link href="static/css/blugold.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+	<style>
+	body {
+	    padding: 10px;
+	}
+	</style>
+    </head>
+    <body>
+	<div class="container">
+
+	    <div class="row">
+		<div class="page-header">
+		    <ul class="nav nav-pills pull-right">
+			
+		    </ul>
+		    <h1><i class="fa fa-code"></i> Homework 04: RPN, Unique</h1>
+		</div>
+	    </div>
+
+            
+<p>The goal of this homework assignment is to allow you to practice using
+<a href="https://www.python.org/">Python</a> to create scripts that utilize <a href="https://en.wikipedia.org/wiki/Data_structure">data structures</a> such as <a href="https://docs.python.org/3/tutorial/datastructures.html#more-on-lists">lists</a> and
+<a href="https://docs.python.org/3/tutorial/datastructures.html#dictionaries">dicts</a> to create simple <a href="https://en.wikipedia.org/wiki/Unix">Unix</a> filters or utilities.</p>
+<p>For this assignment, record your scripts and any responses to the following
+activities in the <code>homework04</code> folder of your <strong>assignments</strong> <a href="https://github.com">GitHub</a>
+repository and push your work by <strong>noon Saturday, February 25</strong>.</p>
+<h2 id="activity-0-preparation">Activity 0: Preparation<a class="headerlink" href="#activity-0-preparation" title="Permanent link">&para;</a></h2>
+<p>Before starting this homework assignment, you should first perform a <code>git
+pull</code> to retrieve any changes in your remote <a href="https://github.com">GitHub</a> repository:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ <span style="color: #008000">cd</span> path/to/repository                   <span style="color: #3D7B7B; font-style: italic"># Go to assignments repository</span>
+
+$ git checkout master                     <span style="color: #3D7B7B; font-style: italic"># Make sure we are in master branch</span>
+
+$ git pull --rebase                       <span style="color: #3D7B7B; font-style: italic"># Get any remote changes not present locally</span>
+</code></pre></div>
+
+<p>Next, create a new branch for this assignment:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ git checkout -b homework04              <span style="color: #3D7B7B; font-style: italic"># Create homework04 branch and check it out</span>
+</code></pre></div>
+
+<p>Once this is done, download the <code>Makefile</code> and test scripts:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Go to homework04 folder</span>
+$ <span style="color: #008000">cd</span> homework04
+
+<span style="color: #3D7B7B; font-style: italic"># Download the Makefile</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework04/Makefile
+
+<span style="color: #3D7B7B; font-style: italic"># Add and commit Makefile</span>
+$ git add Makefile
+$ git commit -m <span style="color: #BA2121">&quot;homework04: add Makefile&quot;</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Download the test scripts</span>
+$ make test-scripts
+</code></pre></div>
+
+<div class="alert alert-info">
+<p><strong>Note</strong>, you do not need to add and commit the test scripts since the
+<code>Makefile</code> will automatically download them again whenever you run <code>make</code>.</p>
+</div>
+<p>You are now ready to work on the activities below.</p>
+<div class="alert alert-success">
+<h4 id="frequently-asked-questions"><i class="fa fa-question"></i> Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h4>
+<div class="text-center">
+<iframe allowfullscreen="true" frameborder="0" height="389" mozallowfullscreen="true" src="https://docs.google.com/presentation/d/e/2PACX-1vTU2AzJlEOsDNc10rhT6OS-0IndQng7aywb6FYS_jP_0XmPevTIxSB24OoZ8z-Le9VCCFU062MtThBa/embed?start=false&amp;loop=false&amp;delayms=3000" webkitallowfullscreen="true" width="480"></iframe>
+</div>
+</div>
+<h2 id="activity-1-rpn-5-points">Activity 1: RPN (5 Points)<a class="headerlink" href="#activity-1-rpn-5-points" title="Permanent link">&para;</a></h2>
+<p><img src="http://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/HP_35_Calculator.jpg/180px-HP_35_Calculator.jpg" class="pull-right img-responsive"></p>
+<p>Back in the day, when phones were <a href="https://en.wikipedia.org/wiki/Landline">landlines</a>, computers were the size of
+minivans, and the instructor was just a twinkle in his parents' eye, the
+pride and joy of every engineering geek was their <a href="http://www.hp.com/">HP</a> scientific calculator.
+Even the mighty <a href="http://en.wikipedia.org/wiki/Woz">Woz</a><sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> <a href="http://gizmodo.com/5306520/my-most-memorable-gadgets-by-steve-wozniak">cherished</a> his legendary <a href="http://h20331.www2.hp.com/Hpsub/cache/457246-0-0-225-121.html?jumpid=ex_r2845_go/35celebration/calculators">HP-35</a>.</p>
+<p>Of course, since the old timers back then were super awesome (unlike today's
+<a href="https://www.urbandictionary.com/define.php?term=Zoomer">zoomers</a>), they didn't use the standard <em>lame</em> <a href="http://en.wikipedia.org/wiki/Infix_notation">infix notation</a> to perform
+their calculations; instead, they used the uber <code>1337</code> <a href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">reverse polish
+notation</a>.</p>
+<p>That is, rather than entering in <code>&lt;operand&gt; &lt;operation&gt; &lt;operand&gt;</code>, you would
+enter in <code>&lt;operand&gt; &lt;operand&gt; &lt;operation&gt;</code> to perform a calculation on the
+<strong>RPN</strong> calculator. Using <strong>RPN</strong> eliminates the need for paretheses and
+orders of operation since it is never ambiguous what operands are used with
+which operation; the operation is always applied to the previous arguments.</p>
+<p>This means that if you wanted to perform <code>3 + 4</code>, you would have to enter in:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>3 4 +
+</code></pre></div>
+
+<p>To prove that you too are uber awesome and to relive some of the glory days,
+you are to create a <strong>RPN</strong> calulator that can perform the following
+arithmetic operations:  <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>.</p>
+<h3 id="task-1-rpnpy">Task 1: <code>rpn.py</code><a class="headerlink" href="#task-1-rpnpy" title="Permanent link">&para;</a></h3>
+<p>The <code>rpn.py</code> script does not take any flags besides <code>-h</code>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./rpn.py -h
+Usage: rpn.py
+
+By default, `rpn.py` will process expressions from standard input.
+</code></pre></div>
+
+<p>As noted in the <strong>usage</strong> message, the <code>rpn.py</code> script will process <a href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">RPN</a>
+expressions by reading in one expression per line, evaluating that
+expression, and then displaying the results.</p>
+<p>For instance, given the following input:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>4
+5 8 * 1 +
+</code></pre></div>
+
+<p>The <code>rpn.py</code> script will output the following:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>4.0
+41.0
+</code></pre></div>
+
+<p>Here is an example of <code>rpn.py</code> in action:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./rpn.py
+4
+4.0
+5 8 * 1 +
+41.0
+</code></pre></div>
+
+<h4 id="skeleton">Skeleton<a class="headerlink" href="#skeleton" title="Permanent link">&para;</a></h4>
+<p>Here is a skeleton you can use to start your <code>rpn.py</code> script:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Download rpn.py skeleton</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework04/rpn.py
+</code></pre></div>
+
+<p>It should look something like this:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#!/usr/bin/env python3</span>
+
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">os</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Globals</span>
+
+OPERATORS <span style="color: #666666">=</span> {<span style="color: #BA2121">&#39;+&#39;</span>, <span style="color: #BA2121">&#39;-&#39;</span>, <span style="color: #BA2121">&#39;*&#39;</span>, <span style="color: #BA2121">&#39;/&#39;</span>}
+
+<span style="color: #3D7B7B; font-style: italic"># Functions</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">usage</span>(status<span style="color: #666666">=0</span>):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Display usage message and exit with status. &#39;&#39;&#39;</span>
+    progname <span style="color: #666666">=</span> os<span style="color: #666666">.</span>path<span style="color: #666666">.</span>basename(sys<span style="color: #666666">.</span>argv[<span style="color: #666666">0</span>])
+    <span style="color: #008000">print</span>(<span style="color: #BA2121">f&#39;&#39;&#39;Usage: </span><span style="color: #A45A77; font-weight: bold">{</span>progname<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"></span>
+
+<span style="color: #BA2121">By default, </span><span style="color: #A45A77; font-weight: bold">{</span>progname<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> will process expressions from standard input.&#39;&#39;&#39;</span>)
+
+    sys<span style="color: #666666">.</span>exit(status)
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">error</span>(message):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Display error message and exit with error. &#39;&#39;&#39;</span>
+    <span style="color: #008000">print</span>(message, file<span style="color: #666666">=</span>sys<span style="color: #666666">.</span>stderr)
+    sys<span style="color: #666666">.</span>exit(<span style="color: #666666">1</span>)
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">evaluate_operation</span>(operation, operand1, operand2):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Return the result of evaluating the operation with operand1 and</span>
+<span style="color: #BA2121; font-style: italic">    operand2.</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_operation(&#39;+&#39;, 4, 2)</span>
+<span style="color: #BA2121; font-style: italic">    6</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_operation(&#39;-&#39;, 4, 2)</span>
+<span style="color: #BA2121; font-style: italic">    2</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_operation(&#39;*&#39;, 4, 2)</span>
+<span style="color: #BA2121; font-style: italic">    8</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_operation(&#39;/&#39;, 4, 2)</span>
+<span style="color: #BA2121; font-style: italic">    2.0</span>
+<span style="color: #BA2121; font-style: italic">    &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">pass</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">evaluate_expression</span>(expression):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Return the result of evaluating the RPN expression.</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_expression(&#39;4 2 +&#39;)</span>
+<span style="color: #BA2121; font-style: italic">    6.0</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_expression(&#39;4 2 -&#39;)</span>
+<span style="color: #BA2121; font-style: italic">    2.0</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_expression(&#39;4 2 *&#39;)</span>
+<span style="color: #BA2121; font-style: italic">    8.0</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_expression(&#39;4 2 /&#39;)</span>
+<span style="color: #BA2121; font-style: italic">    2.0</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_expression(&#39;4 +&#39;)</span>
+<span style="color: #BA2121; font-style: italic">    Traceback (most recent call last):</span>
+<span style="color: #BA2121; font-style: italic">    ...</span>
+<span style="color: #BA2121; font-style: italic">    SystemExit: 1</span>
+
+<span style="color: #BA2121; font-style: italic">    &gt;&gt;&gt; evaluate_expression(&#39;a b +&#39;)</span>
+<span style="color: #BA2121; font-style: italic">    Traceback (most recent call last):</span>
+<span style="color: #BA2121; font-style: italic">    ...</span>
+<span style="color: #BA2121; font-style: italic">    SystemExit: 1</span>
+<span style="color: #BA2121; font-style: italic">    &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">pass</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">main</span>():
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Parse command line arguments and process expressions from standard</span>
+<span style="color: #BA2121; font-style: italic">    input. &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">pass</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Main Execution</span>
+
+<span style="color: #008000; font-weight: bold">if</span> <span style="color: #19177C">__name__</span> <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;__main__&#39;</span>:
+    main()
+</code></pre></div>
+
+<h4 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h4>
+<ul>
+<li><a href="https://docs.python.org/3/tutorial/controlflow.html#pass-statements">pass</a> is a placeholder in <a href="https://www.python.org/">Python</a> that does nothing.  You may remove
+  these statements once you add code to the functions above.</li>
+</ul>
+<div class="alert alert-danger">
+<h4 id="doctests"><i class="fa fa-code"></i> Doctests<a class="headerlink" href="#doctests" title="Permanent link">&para;</a></h4>
+<p>The <code>&gt;&gt;&gt; ...</code> strings under each function are <a href="https://docs.python.org/3/library/doctest.html">doctests</a>.  These serve a dual
+purpose: they provided documentation on what the function should do AND they
+act as <a href="https://en.wikipedia.org/wiki/Unit_testing">unit tests</a> for the function.</p>
+<p>You <strong>must not remove or alter these</strong> <a href="https://docs.python.org/3/library/doctest.html">doctests</a>.</p>
+</div>
+<h4 id="hints">Hints<a class="headerlink" href="#hints" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p><code>usage</code> is provided to you and you should call it from the <code>main</code> function
+  when appropriate.</p>
+</li>
+<li>
+<p><code>error</code> is provided to you and you should call it from the
+  <code>evaluate_expression</code> function when you encounter an error such as not
+  having enough operands or not being able to convert a <strong>token</strong> into a
+  <code>float</code>.</p>
+</li>
+<li>
+<p><code>evaluate_operation</code> takes one of the arithmetic <code>operations</code> as an
+  argument along with two <code>operands</code>.  You are to compute the result of
+  performing the <code>operation</code> on the two <code>operands</code> and return the result.</p>
+</li>
+<li>
+<p><code>evaluate_expression</code> takes a <a href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">RPN</a> <code>expression</code> as a string, which you
+  will need to <strong>split</strong> into individual <strong>tokens</strong> or <strong>words</strong>.  You can
+  evaluate the <code>expression</code> by using a <a href="https://en.wikipedia.org/wiki/Stack_(abstract_data_type)">stack</a> in the following manner:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">for</span> each word <span style="color: #AA22FF; font-weight: bold">in</span> expression:
+    <span style="color: #008000; font-weight: bold">if</span> word <span style="color: #AA22FF; font-weight: bold">is</span> an operation:
+        evaluate operation using top two items <span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">stack</span>
+    <span style="color: #008000; font-weight: bold">else</span>:
+        convert word into floating point
+
+    push result of evaluation <span style="color: #AA22FF; font-weight: bold">or</span> conversion to stack
+
+<span style="color: #008000; font-weight: bold">return</span> top of stack
+
+Note <span style="color: #666666">1</span>: Must check <span style="color: #008000; font-weight: bold">if</span> stack has enough operands
+Note <span style="color: #666666">2</span>: Must check <span style="color: #008000; font-weight: bold">if</span> conversion <span style="color: #AA22FF; font-weight: bold">is</span> successful
+</code></pre></div>
+
+<p>Here is a diagram that shows how you can use a <a href="https://en.wikipedia.org/wiki/Stack_(abstract_data_type)">stack</a> to evaluate: <code>5 1 2 + 4 * + 3 -</code>:</p>
+<p><div class="thumbnail">
+<img src="static/img/homework04-rpn.png" class="img-responsive">
+</div></p>
+</li>
+<li>
+<p><code>main</code> parses the command line arguments and then evaluates each <a href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">RPN</a>
+  expression from standard input and displays the result.</p>
+</li>
+</ul>
+<h3 id="task-2-testing">Task 2: Testing<a class="headerlink" href="#task-2-testing" title="Permanent link">&para;</a></h3>
+<p>To aid you in testing the <code>rpn.py</code> script, we have provided you with both
+<a href="https://docs.python.org/3/library/doctest.html">doctests</a> and <code>test_rpn.sh</code>, which you can use as follows:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run just the doctests</span>
+$ python3 -m doctest rpn.py -v
+...
+<span style="color: #666666">4</span> items had no tests:
+    rpn
+    rpn.error
+    rpn.main
+    rpn.usage
+<span style="color: #666666">2</span> items passed all tests:
+  <span style="color: #666666">6</span> tests <span style="color: #008000; font-weight: bold">in</span> rpn.evaluate_expression
+  <span style="color: #666666">4</span> tests <span style="color: #008000; font-weight: bold">in</span> rpn.evaluate_operation
+<span style="color: #666666">10</span> tests <span style="color: #008000; font-weight: bold">in</span> <span style="color: #666666">6</span> items.
+<span style="color: #666666">10</span> passed and <span style="color: #666666">0</span> failed.
+Test passed.
+
+<span style="color: #3D7B7B; font-style: italic"># Run doctests and functional tests</span>
+$ ./test_rpn.sh
+Testing rpn.py ...
+   Doctests                                 ... <span style="color: #666666">2</span>.00 / <span style="color: #666666">2</span>.00
+   Usage                                    ... Success
+   Usage <span style="color: #666666">(</span>Bad Flags<span style="color: #666666">)</span>                        ... Success
+   Expressions <span style="color: #666666">0</span>                            ... Success
+   Expressions <span style="color: #666666">1</span>                            ... Success
+   Expressions <span style="color: #666666">2</span>                            ... Success
+   Error <span style="color: #666666">1</span>                                  ... Success
+   Error <span style="color: #666666">2</span>                                  ... Success
+
+   Score <span style="color: #666666">5</span>.00 / <span style="color: #666666">5</span>.00
+  Status Success
+</code></pre></div>
+
+<h2 id="activity-2-unique-5-points">Activity 2: Unique (5 Points)<a class="headerlink" href="#activity-2-unique-5-points" title="Permanent link">&para;</a></h2>
+<p>Ben<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup> hates that he has to <a href="http://man7.org/linux/man-pages/man1/sort.1.html">sort</a> his data before he can use <a href="http://man7.org/linux/man-pages/man1/uniq.1.html">uniq</a>.  Now
+that he is learning about the awesomeness of <a href="https://www.python.org/">Python</a> and power of <a href="https://en.wikipedia.org/wiki/Data_structure">data
+structures</a>, he decides to write his own version of <a href="http://man7.org/linux/man-pages/man1/uniq.1.html">uniq</a> that uses a <a href="https://docs.python.org/3/tutorial/datastructures.html#dictionaries">dict</a>
+to avoid the need for sorting.  Because it is <strong>2022</strong> and vowels are no
+longer expensive, he calls his version of the <a href="https://en.wikipedia.org/wiki/Unix">Unix</a> filter: <code>unique.py</code>.</p>
+<h3 id="task-1-uniquepy">Task 1: <code>unique.py</code><a class="headerlink" href="#task-1-uniquepy" title="Permanent link">&para;</a></h3>
+<p>The <code>unique.py</code> script supports a few of <a href="http://man7.org/linux/man-pages/man1/uniq.1.html">uniq</a>'s most frequently used flags:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./unique.py -h
+Usage: unique.py [flags]
+
+    -c      Prefix lines by the number of occurrences
+    -d      Only print duplicate lines
+    -i      Ignore differences in case when comparing, prints out full line in lowercase
+    -u      Only print unique lines
+
+By default, `unique.py` prints one of each type of line.
+</code></pre></div>
+
+<p>The <code>-c</code> flag means that the program will prefix each line with the number of
+times each line appears.</p>
+<p>The <code>-d</code> flag modifies the output so that only duplicate lines (ie. <code>count &gt;
+1</code>) are displayed.</p>
+<p>The <code>-i</code> flag will force the program to ignore case by converting each line
+into lowercase.</p>
+<p>The <code>-u</code> flag modifies the output so that only unique lines (ie. <code>count == 1</code>)
+are displayed.</p>
+<p>Given the following <code>pokemon.txt</code> file:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>pikachu
+pikachu
+charmander
+Squirtle
+squirtle
+squirtle
+</code></pre></div>
+
+<p>Here are examples of <code>unique.py</code> in action:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ cat pokemon.txt | ./unique.py
+pikachu
+charmander
+Squirtle
+squirtle
+
+$ cat pokemon.txt | ./unique.py -i -c -d
+      <span style="color: #666666">2</span> pikachu
+      <span style="color: #666666">3</span> squirtle
+
+$ cat pokemon.txt | ./unique.py -u
+charmander
+Squirtle
+</code></pre></div>
+
+<h4 id="skeleton_1">Skeleton<a class="headerlink" href="#skeleton_1" title="Permanent link">&para;</a></h4>
+<p>Here is a skeleton you can use to start your <code>unique.py</code> script:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Download unique.py skeleton</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework04/unique.py
+</code></pre></div>
+
+<p>It should look something like this:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#!/usr/bin/env python3</span>
+
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">os</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Functions</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">usage</span>(status<span style="color: #666666">=0</span>):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Display usage message and exit with status. &#39;&#39;&#39;</span>
+    progname <span style="color: #666666">=</span> os<span style="color: #666666">.</span>path<span style="color: #666666">.</span>basename(sys<span style="color: #666666">.</span>argv[<span style="color: #666666">0</span>])
+    <span style="color: #008000">print</span>(<span style="color: #BA2121">f&#39;&#39;&#39;Usage: </span><span style="color: #A45A77; font-weight: bold">{</span>progname<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> [flags]</span>
+
+<span style="color: #BA2121">    -c      Prefix lines by the number of occurrences</span>
+<span style="color: #BA2121">    -d      Only print duplicate lines</span>
+<span style="color: #BA2121">    -i      Ignore differences in case when comparing, prints out full line in lowercase</span>
+<span style="color: #BA2121">    -u      Only print unique lines</span>
+
+<span style="color: #BA2121">By default, </span><span style="color: #A45A77; font-weight: bold">{</span>progname<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> prints one of each type of line.&#39;&#39;&#39;</span>)
+    sys<span style="color: #666666">.</span>exit(status)
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">count_frequencies</span>(stream<span style="color: #666666">=</span>sys<span style="color: #666666">.</span>stdin, ignore_case<span style="color: #666666">=</span><span style="color: #008000; font-weight: bold">False</span>):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Count the line frequencies from the data in the specified stream while</span>
+<span style="color: #BA2121; font-style: italic">    ignoring case if specified. &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">pass</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">print_lines</span>(frequencies, occurrences<span style="color: #666666">=</span><span style="color: #008000; font-weight: bold">False</span>, duplicates<span style="color: #666666">=</span><span style="color: #008000; font-weight: bold">False</span>, unique_only<span style="color: #666666">=</span><span style="color: #008000; font-weight: bold">False</span>):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Display line information based on specified parameters:</span>
+
+<span style="color: #BA2121; font-style: italic">    - occurrences:  if True, then prefix lines with number of occurrences</span>
+<span style="color: #BA2121; font-style: italic">    - duplicates:   if True, then only print duplicate lines</span>
+<span style="color: #BA2121; font-style: italic">    - unique_only:  if True, then only print unique lines</span>
+<span style="color: #BA2121; font-style: italic">    &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">pass</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">main</span>():
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Process command line arguments, count frequencies from standard input,</span>
+<span style="color: #BA2121; font-style: italic">    and then print lines. &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">pass</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Main Execution</span>
+
+<span style="color: #008000; font-weight: bold">if</span> <span style="color: #19177C">__name__</span> <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;__main__&#39;</span>:
+    main()
+</code></pre></div>
+
+<h4 id="hints_1">Hints<a class="headerlink" href="#hints_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p><code>usage</code> is provided to you and you should call it from the <code>main</code> function
+  when appropriate.</p>
+</li>
+<li>
+<p><code>count_frequencies</code> reads each line in the <code>stream</code> and uses a <a href="https://docs.python.org/3/tutorial/datastructures.html#dictionaries">dict</a> to
+  keep track of how often each line occurs.  If <code>ignore_case</code> is set, then
+  all lines are converted into lowercase.</p>
+</li>
+<li>
+<p><code>print_lines</code> iterates through the results of <code>count_frequencies</code> and shows
+  each line, depending on the settings of <code>occurrences</code> (show counts),
+  <code>duplicates</code> (only show lines with duplicates), and <code>unique_only</code> (only
+  show lines that are unique).</p>
+<p>When <code>occurrences</code> is <code>True</code>, you can use the following code to format
+your output:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000">print</span>(<span style="color: #BA2121">f&#39;</span><span style="color: #A45A77; font-weight: bold">{</span>frequency<span style="color: #A45A77; font-weight: bold">:</span><span style="color: #BA2121">&gt;7</span><span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> </span><span style="color: #A45A77; font-weight: bold">{</span>line<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">&#39;</span>)
+</code></pre></div>
+
+<p>This will ensure that the <code>frequency</code> or count for the <code>line</code> is
+properly aligned.</p>
+</li>
+<li>
+<p><code>main</code> processes the command line arguments using the <code>while</code> loop
+  discussed in class and then counts the frequences of the lines from
+  standard input and then prints the results based on the parsed options.</p>
+</li>
+</ul>
+<h3 id="task-2-testing_1">Task 2: Testing<a class="headerlink" href="#task-2-testing_1" title="Permanent link">&para;</a></h3>
+<p>To aid you in testing the <code>unique.py</code> script, we have provided you with both
+<code>unique_test.py</code> and <code>test_unique.sh</code>, which you can use as follows:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run just the unit tests</span>
+$ ./unique_test.py -v
+test_00_count_frequencies <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_01_count_frequencies_ignore_case <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_02_print_lines <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_03_print_lines_ignore_case <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_04_print_lines_occurrences <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_05_print_lines_ignore_case_occurrences <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_06_print_lines_duplicates <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_07_print_lines_ignore_case_duplicates <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_08_print_lines_unique_only <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_09_print_lines_ignore_unique_only <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_10_print_lines_occurrences_duplicates <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_11_print_lines_ignore_case_occurrences_duplicates <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_12_print_lines_occurrences_unique_only <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+test_13_print_lines_ignore_case_occurrences_unique_only <span style="color: #666666">(</span>__main__.UniqueTest<span style="color: #666666">)</span> ... ok
+
+----------------------------------------------------------------------
+Ran <span style="color: #666666">14</span> tests <span style="color: #008000; font-weight: bold">in</span> <span style="color: #666666">0</span>.001s
+
+OK
+
+<span style="color: #3D7B7B; font-style: italic"># Run unit and functional tests</span>
+$ ./test_unique.sh
+Testing unique.py ...
+   Unit Tests                               ... <span style="color: #666666">2</span>.00 / <span style="color: #666666">2</span>.00
+   Usage                                    ... Success
+   Usage <span style="color: #666666">(</span>Bad Flags<span style="color: #666666">)</span>                        ... Success
+   Unique                                   ... Success
+   Unique -i                                ... Success
+   Unique -c                                ... Success
+   Unique -i -c                             ... Success
+   Unique -d                                ... Success
+   Unique -i -d                             ... Success
+   Unique -c -d                             ... Success
+   Unique -i -c -d                          ... Success
+   Unique -u                                ... Success
+   Unique -i -u                             ... Success
+   Unique -c -u                             ... Success
+   Unique -i -c -u                          ... Success
+
+   Score <span style="color: #666666">5</span>.00 / <span style="color: #666666">5</span>.00
+  Status Success
+</code></pre></div>
+
+<h2 id="activity-3-quiz-2-points">Activity 3: Quiz (2 Points)<a class="headerlink" href="#activity-3-quiz-2-points" title="Permanent link">&para;</a></h2>
+<p>Once you have completed all the activities above, you are to complete the
+following <strong>reflection quiz</strong>:</p>
+<div id="quiz-questions"></div>
+
+<div id="quiz-responses"></div>
+
+<script src="static/js/dredd-quiz.js"></script>
+<script>
+loadQuiz('static/json/homework04.json');
+</script>
+
+<pre style="display: none;" id="dr-container" class="codehilite"><code id="dredd-response"></code></pre>
+
+<p>As with <a href="reading01.html">Reading 01</a>, you will need to store your answers in a
+<code>homework04/answers.json</code> file.  You can use the form above to generate the
+contents of this file, or you can write the <a href="https://json.org/">JSON</a> by hand.</p>
+<p>To test your quiz, you can use the <code>check.py</code> script:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ../.scripts/check.py
+Checking homework04 quiz ...
+     Q01 <span style="color: #666666">0</span>.20
+     Q02 <span style="color: #666666">0</span>.40
+     Q03 <span style="color: #666666">0</span>.60
+     Q04 <span style="color: #666666">0</span>.20
+     Q05 <span style="color: #666666">0</span>.60
+   Score <span style="color: #666666">2</span>.00 / <span style="color: #666666">2</span>.00
+  Status Success
+</code></pre></div>
+
+<h2 id="guru-point-1-extra-credit-point">Guru Point (1 Extra Credit Point)<a class="headerlink" href="#guru-point-1-extra-credit-point" title="Permanent link">&para;</a></h2>
+<p>For extra credit, you are to extend the <code>rpn.py</code> script to support the
+exponent operation:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>2 3 ^ -&gt; 8
+</code></pre></div>
+
+<p>Once you have implemented this functionality, you are to extend the existing
+<a href="https://docs.python.org/3/library/doctest.html">doctests</a> in your <code>rpn.py</code> to verify that the new operation is implemented
+correctly.  Moreover, you are to create a new <code>rpn_test.py</code> that uses
+<a href="https://docs.python.org/3/library/unittest.html">unittest</a> to test each arithmetic operation that your <code>rpn.py</code> script
+supports (<strong>hint</strong>: you can use <code>unique_test.py</code> as a reference).</p>
+<p>Note, <a href="https://en.wikipedia.org/wiki/Unit_testing">unit testing</a> is an important software development method used in most
+modern workplaces and the purpose of this extra credit opportunity is to
+allow you to practice making your own tests for a program you wrote.</p>
+<div class="alert alert-info">
+<h4 id="verification"><i class="fa fa-check"></i> Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h4>
+<p>To get credit for this Guru Point, show your modified <code>rpn.py</code> and your new
+<code>rpn_test.py</code> to a TA to verify (or attached a video / screenshot to your
+<strong>Pull Request</strong>). You have up until a week <strong>after</strong> this assignment is due
+to verify your Guru Point.</p>
+</div>
+<div class="alert alert-success">
+<h4 id="self-service-extension"><i class="fa fa-calendar"></i> Self-Service Extension<a class="headerlink" href="#self-service-extension" title="Permanent link">&para;</a></h4>
+<p>Remember that you can always <strong>forgo</strong> this Guru Point for <strong>two extra days</strong>
+to do the homework.  That is, if you need an extension, you can simply skip
+the Guru Point and you will automatically have until Monday to complete the
+assignment for full credit.</p>
+<p>Just leave a note on your <strong>Pull Request</strong> of your intentions.</p>
+</div>
+<h2 id="submission">Submission<a class="headerlink" href="#submission" title="Permanent link">&para;</a></h2>
+<p>To submit your assignment, please commit your work to the <code>homework04</code> folder
+of your <code>homework04</code> branch in your <strong>assignments</strong> <a href="https://github.com">GitHub</a> repository.
+Your <tt>homework04</tt> folder should <strong>only</strong> contain the following files:</p>
+<ul>
+<li><tt>Makefile</tt></li>
+<li><tt>answers.json</tt></li>
+<li><tt>rpn.py</tt></li>
+<li><tt>unique.py</tt></li>
+</ul>
+<div class="alert alert-info">
+<p><strong>Note</strong>: You do not need to commit the test scripts because the <code>Makefile</code>
+automatically downloads them.</p>
+</div>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># BE SURE TO DO THE PREPARATION STEPS IN ACTIVITY 0</span>
+<span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+
+$ <span style="color: #008000">cd</span> homework04                                       <span style="color: #3D7B7B; font-style: italic"># Go to Homework 03 directory</span>
+
+$ <span style="color: #19177C">$EDITOR</span> rpn.py                                      <span style="color: #3D7B7B; font-style: italic"># Edit script</span>
+$ git add rpn.py                                      <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework04: Activity 1 completed&quot;</span>    <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ <span style="color: #19177C">$EDITOR</span> unique.py                                   <span style="color: #3D7B7B; font-style: italic"># Edit script</span>
+$ git add unique.py                                   <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework04: Activity 2 completed&quot;</span>    <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ <span style="color: #19177C">$EDITOR</span> answers.json                                <span style="color: #3D7B7B; font-style: italic"># Edit quiz</span>
+$ git add answers.json                                <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework04: Activity 3 completed&quot;</span>    <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git push -u origin homework04                       <span style="color: #3D7B7B; font-style: italic"># Push branch to GitHub</span>
+</code></pre></div>
+
+<div class="alert alert-danger">
+<h4 id="pull-request"><i class="fa fa-github"></i> Pull Request<a class="headerlink" href="#pull-request" title="Permanent link">&para;</a></h4>
+<p>Remember to create a <strong>Pull Request</strong> and assign the appropriate TA from the
+<a href="reading05_tas.html">Reading 05 TA List</a>.</p>
+<p><strong>DO NOT MERGE</strong> your own <strong>Pull Request</strong>.  The TAs use open <strong>Pull
+Requests</strong> to keep track of which assignments to grade.  Closing them
+yourself will cause a delay in grading and confuse the TAs.</p>
+</div>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Woz spilled my french fries. I will never forget.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>Thanks to <strong>Ben Lyons</strong> for prototyping this assignment.&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+	    <div class="row">
+		<hr/>
+
+		<footer class="text-center">
+		    <p class="text-muted">
+		    <small>
+		    Built using
+		    <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>,
+		    <a href="http://fortawesome.github.com/Font-Awesome/">Font Awesome</a>, and
+		    <a href="http://www.python.org/">Python</a>.
+		    <br/>
+		    &copy; 2023 <a href="http://www.nd.edu">University of Notre Dame</a>
+		    </small>
+		    </p>
+		</footer>
+	    </div>
+
+	</div> <!-- /container -->
+
+	<!-- Bootstrap core JavaScript
+	================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	
+    </body>
+</html>
+
