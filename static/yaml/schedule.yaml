@@ -132,6 +132,9 @@
 
       - date:           Fri 02/17
         topics:         Python Scripting
+        items:
+          - name:       Slides 09
+            link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
 
 - name:     "Unit 02: Python"
 
@@ -140,12 +143,21 @@
       - date:           Mon 02/20
         topics:         Functions, Doctests, Lists
         assignment:     Reading 05
+        items:
+          - name:       Slides 09
+            link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
 
       - date:           Wed 02/22
         topics:         Strings, Dictionaries
+        items:
+          - name:       Slides 09
+            link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
 
       - date:           Fri 02/24
         topics:         I/O, Processes, Requests, Regular Expressions
+        items:
+          - name:       Slides 09
+            link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
 
       - date:           Sat 02/25
         topics:         RPN, Unique
@@ -156,9 +168,15 @@
       - date:           Mon 02/27
         topics:         CSV
         assignment:     Reading 06
+        items:
+          - name:       Slides 09
+            link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
 
       - date:           Wed 03/01
         topics:         JSON
+        items:
+          - name:       Slides 09
+            link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
 
       - date:           Fri 03/03
         topics:         Functional Programming
