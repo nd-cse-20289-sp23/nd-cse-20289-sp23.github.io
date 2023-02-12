@@ -341,7 +341,7 @@ body:       |
   Ben[^2] hates that he has to [sort] his data before he can use [uniq].  Now
   that he is learning about the awesomeness of [Python] and power of [data
   structures], he decides to write his own version of [uniq] that uses a [dict]
-  to avoid the need for sorting.  Because it is **2022** and vowels are no
+  to avoid the need for sorting.  Because it is **2023** and vowels are no
   longer expensive, he calls his version of the [Unix] filter: `unique.py`.
 
   [sort]: http://man7.org/linux/man-pages/man1/sort.1.html
