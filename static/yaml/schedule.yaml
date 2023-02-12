@@ -121,6 +121,8 @@
       - date:           Mon 02/13
         assignment:     Reading 04
         items:
+          - name:       Slides R1
+            link:       https://docs.google.com/presentation/d/1xlL66goXh_gDWmTlJnsA6CHeT5KpYRRg74U1PwUrip8/edit?usp=sharing
           - name:       Checklist 01
             link:       checklist01.html
 
