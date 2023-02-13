@@ -396,17 +396,19 @@ body:       |
 
         1. **variables**
 
-        2. **capturing STDOUT**
+        2. **command substitution**
+        
+        3. **short circuit evaluation**
 
-        3. **if** statement
+        4. **if** statement
 
-        4. **case** statement
+        5. **case** statement
 
-        5. **for** loop
+        6. **for** loop
 
-        6. **while** loop
+        7. **while** loop
 
-        7. **function**
+        8. **function**
 
     3. How do we **parse command line arguments** in a **shell script**?
 
