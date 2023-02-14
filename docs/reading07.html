@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<title>Reading 07: Functional Programming</title>
+
+	<!-- Bootstrap core CSS -->
+	<link href="static/css/blugold.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+	<style>
+	body {
+	    padding: 10px;
+	}
+	</style>
+    </head>
+    <body>
+	<div class="container">
+
+	    <div class="row">
+		<div class="page-header">
+		    <ul class="nav nav-pills pull-right">
+			
+		    </ul>
+		    <h1><i class="fa fa-book"></i> Reading 07: Functional Programming</h1>
+		</div>
+	    </div>
+
+            
+<p><strong>Everyone</strong>:</p>
+<p>Next week, we will explore a new programming paradigm called <a href="https://en.wikipedia.org/wiki/Functional_programming">functional
+programming</a>, which, if you look closely, is similar to the <a href="https://en.wikipedia.org/wiki/Unix_philosophy">Unix
+Philosophy</a>: By decomposing data processing problems into small functions
+that <strong>work together</strong> to process data without side-effects, we can expose
+opportunities for <a href="https://en.wikipedia.org/wiki/Concurrency_(computer_science)">concurrency</a> and <a href="https://en.wikipedia.org/wiki/Parallel_computing">parallelism</a> to build powerful
+<strong>abstractions</strong> such as <a href="https://research.google/pubs/pub62/">MapReduce</a>.</p>
+<div class="alert alert-info">
+<h4 id="tldr"><i class="fa fa-search"></i> TL;DR<a class="headerlink" href="#tldr" title="Permanent link">&para;</a></h4>
+<p>The focus of this reading is to introduce you to <a href="https://en.wikipedia.org/wiki/Functional_programming">functional programming</a> in
+<a href="https://www.python.org/">Python</a>.</p>
+</div>
+<p><img src="static/img/python.png" class="pull-right"></p>
+<h2 id="readings">Readings<a class="headerlink" href="#readings" title="Permanent link">&para;</a></h2>
+<p>The readings for this week are:</p>
+<ol>
+<li>
+<p><a href="https://realpython.com/">Real Python</a></p>
+<ul>
+<li>
+<p><a href="https://realpython.com/python-functional-programming/">Functional Programming in Python: When and How to Use It</a></p>
+</li>
+<li>
+<p><a href="https://realpython.com/list-comprehension-python/">When to Use a List Comprehension in Python</a></p>
+</li>
+<li>
+<p><a href="https://realpython.com/introduction-to-python-generators/">How to Use Generators and yield in Python</a></p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="optional-resources">Optional Resources<a class="headerlink" href="#optional-resources" title="Permanent link">&para;</a></h3>
+<p>Here are some additional resources:</p>
+<ol>
+<li>
+<p><a href="https://docs.python.org/3/howto/functional.html">Functional Programming HOWTO</a></p>
+</li>
+<li>
+<p><a href="https://maryrosecook.com/blog/post/a-practical-introduction-to-functional-programming">A practical introduction to functional programming</a></p>
+</li>
+<li>
+<p><a href="https://www.geeksforgeeks.org/functional-programming-in-python/">Functional Programming in Python</a></p>
+</li>
+<li>
+<p><a href="http://www.scipy-lectures.org/advanced/advanced_python/index.html">Iterators, generator expressions and generators</a></p>
+</li>
+<li>
+<p><a href="https://realpython.com/">Real Python</a></p>
+<ul>
+<li>
+<p><a href="https://realpython.com/courses/functional-programming-python/">Functional Programming in Python</a></p>
+</li>
+<li>
+<p><a href="https://realpython.com/list-comprehension-python/">When to Use a List Comprehension in Python</a></p>
+</li>
+<li>
+<p><a href="https://realpython.com/introduction-to-python-generators/">How to Use Generators and yield in Python</a></p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="quiz">Quiz<a class="headerlink" href="#quiz" title="Permanent link">&para;</a></h2>
+<p>This week the reading is split into two sections: the first part is a short
+<a href="https://dredd.h4x0r.space">dredd</a> quiz, while the second part involves three short <a href="https://www.python.org/">Python</a> scripts:
+<code>evens_fp.py</code>, <code>evens_lc.py</code>, and <code>evens_gr.py</code>.</p>
+<p>To test these scripts, you will need to download the <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/reading07/Makefile">Makefile</a> and test
+scripts:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ git checkout master                 <span style="color: #3D7B7B; font-style: italic"># Make sure we are in master branch</span>
+$ git pull --rebase                   <span style="color: #3D7B7B; font-style: italic"># Make sure we are up-to-date with GitHub</span>
+
+$ git checkout -b reading07           <span style="color: #3D7B7B; font-style: italic"># Create reading07 branch and check it out</span>
+
+$ <span style="color: #008000">cd</span> reading07                        <span style="color: #3D7B7B; font-style: italic"># Go into reading07 folder</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Download Reading 07 Makefile</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/reading07/Makefile
+
+<span style="color: #3D7B7B; font-style: italic"># Execute tests (and download them)</span>
+$ make
+</code></pre></div>
+
+<h3 id="questions">Questions<a class="headerlink" href="#questions" title="Permanent link">&para;</a></h3>
+<p>Record the answers to the following <a href="static/json/reading07.json">Reading 07 Quiz</a> questions in your
+<code>reading07</code> branch:</p>
+<div id="quiz-questions"></div>
+
+<div id="quiz-responses"></div>
+
+<script src="static/js/dredd-quiz.js"></script>
+
+<script>
+loadQuiz('static/json/reading07.json');
+</script>
+
+<pre style="display: none;" id="dr-container" class="codehilite"><code id="dredd-response"></code></pre>
+
+<h3 id="scripts">Scripts<a class="headerlink" href="#scripts" title="Permanent link">&para;</a></h3>
+<p>Given the following <a href="https://www.python.org/">Python</a> script, <code>evens.py</code>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#!/usr/bin/env python3</span>
+
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+results <span style="color: #666666">=</span> []
+<span style="color: #008000; font-weight: bold">for</span> number <span style="color: #AA22FF; font-weight: bold">in</span> sys<span style="color: #666666">.</span>stdin:
+    number <span style="color: #666666">=</span> number<span style="color: #666666">.</span>strip()
+    <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">int</span>(number) <span style="color: #666666">%</span> <span style="color: #666666">2</span> <span style="color: #666666">==</span> <span style="color: #666666">0</span>:
+        results<span style="color: #666666">.</span>append(number)
+
+<span style="color: #008000">print</span>(<span style="color: #BA2121">&#39; &#39;</span><span style="color: #666666">.</span>join(results))
+</code></pre></div>
+
+<ol>
+<li>
+<p>Create a second version of this script called <code>evens_fp.py</code> that
+re-implements the original <code>evens.py</code> script in <strong>one line</strong> using <a href="https://docs.python.org/3/library/functions.html#map">map</a>,
+<a href="https://docs.python.org/3/library/functions.html#filter">filter</a>, and <a href="https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions">lambda</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#!/usr/bin/env python3</span>
+
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+<span style="color: #008000">print</span>(<span style="color: #BA2121">&#39; &#39;</span><span style="color: #666666">.</span>join(
+    <span style="color: #3D7B7B; font-style: italic"># TODO: One-line expression with map, filter, lambda</span>
+))
+</code></pre></div>
+
+</li>
+<li>
+<p>Create a third version of this script called <code>evens_lc.py</code> that
+re-implements the original <code>evens.py</code> script in <strong>one line</strong>
+using <a href="https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions">list comprehensions</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#!/usr/bin/env python3</span>
+
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+<span style="color: #008000">print</span>(<span style="color: #BA2121">&#39; &#39;</span><span style="color: #666666">.</span>join(
+    <span style="color: #3D7B7B; font-style: italic"># TODO: One-line expression with list comprehension</span>
+))
+</code></pre></div>
+
+</li>
+<li>
+<p>Create a fourth version of this script called <code>evens_gr.py</code> that
+re-implements the original <code>evens.py</code> script by creating a <a href="https://docs.python.org/3/howto/functional.html#generators">generator</a> function
+using the <a href="https://docs.python.org/3/reference/simple_stmts.html#yield">yield</a> keyword.</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#!/usr/bin/env python3</span>
+
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">evens</span>(stream):
+    <span style="color: #3D7B7B; font-style: italic"># TODO: Implementation that uses yield statement</span>
+
+<span style="color: #008000">print</span>(<span style="color: #BA2121">&#39; &#39;</span><span style="color: #666666">.</span>join(evens(sys<span style="color: #666666">.</span>stdin)))
+</code></pre></div>
+
+</li>
+</ol>
+<p>To test your scripts manually, you should be able to reproduce the following output:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ seq <span style="color: #666666">1</span> <span style="color: #666666">10</span> | ./evens_fp.py
+<span style="color: #666666">2</span> <span style="color: #666666">4</span> <span style="color: #666666">6</span> <span style="color: #666666">8</span> <span style="color: #666666">10</span>
+
+$ seq <span style="color: #666666">1</span> <span style="color: #666666">10</span> | ./evens_lc.py
+<span style="color: #666666">2</span> <span style="color: #666666">4</span> <span style="color: #666666">6</span> <span style="color: #666666">8</span> <span style="color: #666666">10</span>
+
+$ seq <span style="color: #666666">1</span> <span style="color: #666666">10</span> | ./evens_gr.py
+<span style="color: #666666">2</span> <span style="color: #666666">4</span> <span style="color: #666666">6</span> <span style="color: #666666">8</span> <span style="color: #666666">10</span>
+</code></pre></div>
+
+<h2 id="submission">Submission<a class="headerlink" href="#submission" title="Permanent link">&para;</a></h2>
+<p>To submit you work, follow the same process outlined in <a href="reading01.html">Reading 01</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># BE SURE TO DO THE PREPARATION STEPS ABOVE</span>
+<span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+
+$ <span style="color: #008000">cd</span> reading07                        <span style="color: #3D7B7B; font-style: italic"># Go into reading07 folder</span>
+
+$ <span style="color: #19177C">$EDITOR</span> answers.json                <span style="color: #3D7B7B; font-style: italic"># Edit your answers.json file</span>
+
+$ ../.scripts/check.py                <span style="color: #3D7B7B; font-style: italic"># Check reading07 quiz</span>
+Checking reading07 quiz ...
+      Q1 <span style="color: #666666">1</span>.00
+   Score <span style="color: #666666">1</span>.00 / <span style="color: #666666">1</span>.00
+  Status Success
+
+$ git add answers.json                <span style="color: #3D7B7B; font-style: italic"># Add answers.json to staging area</span>
+$ git commit -m <span style="color: #BA2121">&quot;Reading 07: Quiz&quot;</span>    <span style="color: #3D7B7B; font-style: italic"># Commit work</span>
+
+$ <span style="color: #19177C">$EDITOR</span> evens_fp.py                 <span style="color: #3D7B7B; font-style: italic"># Edit your evens_fp.py file</span>
+$ <span style="color: #19177C">$EDITOR</span> evens_lc.py                 <span style="color: #3D7B7B; font-style: italic"># Edit your evens_lc.py file</span>
+$ <span style="color: #19177C">$EDITOR</span> evens_gr.py                 <span style="color: #3D7B7B; font-style: italic"># Edit your evens_gr.py file</span>
+
+$ make                                <span style="color: #3D7B7B; font-style: italic"># Test all scripts</span>
+Testing evens_fp.py ...
+ evens_fp.py on seq <span style="color: #666666">1</span> <span style="color: #666666">10</span>                  ... Success
+ evens_fp.py on seq <span style="color: #666666">10</span> <span style="color: #666666">20</span>                 ... Success
+ evens_fp.py on seq <span style="color: #666666">1</span> <span style="color: #666666">1000000</span> <span style="color: #666666">(</span>count<span style="color: #666666">)</span>     ... Success
+ evens_fp.py no list<span style="color: #666666">()</span>                    ... Success
+ evens_fp.py structure                    ... Success
+
+   Score <span style="color: #666666">1</span>.00 / <span style="color: #666666">1</span>.00
+  Status Success
+
+Testing evens_lc.py ...
+ evens_lc.py on seq <span style="color: #666666">1</span> <span style="color: #666666">10</span>                  ... Success
+ evens_lc.py on seq <span style="color: #666666">10</span> <span style="color: #666666">20</span>                 ... Success
+ evens_lc.py on seq <span style="color: #666666">1</span> <span style="color: #666666">1000000</span> <span style="color: #666666">(</span>count<span style="color: #666666">)</span>     ... Success
+ evens_lc.py no list<span style="color: #666666">()</span>                    ... Success
+ evens_lc.py structure                    ... Success
+
+   Score <span style="color: #666666">1</span>.00 / <span style="color: #666666">1</span>.00
+  Status Success
+
+Testing evens_gr.py ...
+ evens_gr.py on seq <span style="color: #666666">1</span> <span style="color: #666666">10</span>                  ... Success
+ evens_gr.py on seq <span style="color: #666666">10</span> <span style="color: #666666">20</span>                 ... Success
+ evens_gr.py on seq <span style="color: #666666">1</span> <span style="color: #666666">1000000</span> <span style="color: #666666">(</span>count<span style="color: #666666">)</span>     ... Success
+ evens_gr.py no list<span style="color: #666666">()</span>                    ... Success
+ evens_gr.py structure                    ... Success
+
+   Score <span style="color: #666666">1</span>.00 / <span style="color: #666666">1</span>.00
+  Status Success
+
+$ git add Makefile                    <span style="color: #3D7B7B; font-style: italic"># Add Makefile to staging area</span>
+$ git add evens_fp.py                 <span style="color: #3D7B7B; font-style: italic"># Add evens_fp.py to staging area</span>
+$ git add evens_lc.py                 <span style="color: #3D7B7B; font-style: italic"># Add evens_lc.py to staging area</span>
+$ git add evens_gr.py                 <span style="color: #3D7B7B; font-style: italic"># Add evens_gr.py to staging area</span>
+$ git commit -m <span style="color: #BA2121">&quot;Reading 07: Scripts&quot;</span> <span style="color: #3D7B7B; font-style: italic"># Commit work</span>
+
+$ git push -u origin reading07        <span style="color: #3D7B7B; font-style: italic"># Push branch to GitHub</span>
+</code></pre></div>
+
+<div class="alert alert-danger">
+<h4 id="pull-request"><i class="fa fa-github"></i> Pull Request<a class="headerlink" href="#pull-request" title="Permanent link">&para;</a></h4>
+<p>Remember to create a <strong>Pull Request</strong> and assign the appropriate TA from the
+<a href="reading07_tas.html">Reading 07 TA List</a>.</p>
+<p><strong>DO NOT MERGE</strong> your own <strong>Pull Request</strong>.  The TAs use open <strong>Pull Requests</strong>
+to keep track of which assignments to grade.  Closing them yourself will
+cause a delay in grading and confuse the TAs.</p>
+</div>
+
+
+	    <div class="row">
+		<hr/>
+
+		<footer class="text-center">
+		    <p class="text-muted">
+		    <small>
+		    Built using
+		    <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>,
+		    <a href="http://fortawesome.github.com/Font-Awesome/">Font Awesome</a>, and
+		    <a href="http://www.python.org/">Python</a>.
+		    <br/>
+		    &copy; 2023 <a href="http://www.nd.edu">University of Notre Dame</a>
+		    </small>
+		    </p>
+		</footer>
+	    </div>
+
+	</div> <!-- /container -->
+
+	<!-- Bootstrap core JavaScript
+	================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	
+    </body>
+</html>
+
