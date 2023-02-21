@@ -1,0 +1,10 @@
+{
+    "q01": {
+        "type": "blank",
+        "question": "\n<p>Use your <tt>reddit.py</tt> with the <b>URL</b>\n<tt>https://yld.me/raw/ka1y</tt> to answer the following questions:</p>\n\n<ol>\n<li>What is <b>score</b> of the <b>first post</b>? ____</li>\n<li>What is the <b>shortened URL</b> of the <b>third post</b>? <tt>https://is.gd/</tt>____</li>\n<li>What is the <b>title</b> of the <b>fourth post</b> when limited to <tt>8</tt> characters? ____</li>\n<li>What is the <b>score</b> of the <b>last post</b> when sorting by title? ____</li>\n</ol>\n"
+    },
+    "q02": {
+        "type": "blank",
+        "question": "\n<p>Use your <tt>demographics.py</tt> to answer the following questions:</p>\n\n<ol>\n<li>How <b>many male students</b> are in the class of <tt>2025</tt>? ____</li>\n<li>What <b>percentage</b> of the <tt>2025</tt> class is <b>female</b>? ____ %</li>\n<li>Which <b>class year</b> had the lowest percentage of <b>Caucasians</b>? ____</li>\n<li>Which <b>class year</b> had the highest percentage of <b>Asians</b>? ____</li>\n<li>How <b>many Hispanic students</b> were in the class of <tt>2023</tt>? ____</li>\n<li>How <b>many Black or African American students</b> were in the class of <tt>2021</tt>? ____</li>\n</ol>\n"
+    }
+}
