@@ -150,6 +150,8 @@
         items:
           - name:       Slides 09
             link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=b9a39469-d731-4a01-9cff-afaf0138a9d7
 
       - date:           Wed 02/22
         topics:         Strings, Dictionaries
