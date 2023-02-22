@@ -158,6 +158,8 @@
         items:
           - name:       Slides 09
             link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=c3bf953a-f3ec-4675-a7f2-afb1013b2eb9
 
       - date:           Fri 02/24
         topics:         I/O, Processes, Requests, Regular Expressions
