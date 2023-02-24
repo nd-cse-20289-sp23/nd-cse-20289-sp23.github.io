@@ -166,6 +166,8 @@
         items:
           - name:       Slides 09
             link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=1696fa00-85db-42db-b984-afb3013b2c70
 
       - date:           Sat 02/25
         topics:         RPN, Unique
