@@ -215,6 +215,9 @@
 
       - date:           Fri 03/10
         topics:         Server-Side Programming
+        items:
+          - name:       Slides 13
+            link:       https://docs.google.com/presentation/d/1X68OaBkQ2jk1zp2dLWQtvfe0_pPoJCpwtWn0pwJ38xA/edit?usp=sharing
 
       - date:           Sat 03/11
         topics:         Hulk Smash
