@@ -190,6 +190,9 @@
 
       - date:           Fri 03/03
         topics:         Functional Programming
+        items:
+          - name:       Slides 10
+            link:       https://docs.google.com/presentation/d/1chg0bHN4WepHUlbzlR1ZzKoxdVXupKVImgBUzKOUZoc/edit?usp=sharing
 
       - date:           Sat 03/04
         topics:         Reddit and CSE Demographics
