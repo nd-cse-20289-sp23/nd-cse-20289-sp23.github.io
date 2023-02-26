@@ -231,6 +231,7 @@
         assignment:     Reading 08
         items:
           - name:       Checklist 02
+            link:       checklist02.html
 
       - date:           Wed 03/22
         items:
