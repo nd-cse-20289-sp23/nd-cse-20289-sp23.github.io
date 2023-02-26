@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<title>Homework 06: Hulk Smash</title>
+
+	<!-- Bootstrap core CSS -->
+	<link href="static/css/blugold.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+	<style>
+	body {
+	    padding: 10px;
+	}
+	</style>
+    </head>
+    <body>
+	<div class="container">
+
+	    <div class="row">
+		<div class="page-header">
+		    <ul class="nav nav-pills pull-right">
+			
+		    </ul>
+		    <h1><i class="fa fa-code"></i> Homework 06: Hulk Smash</h1>
+		</div>
+	    </div>
+
+            
+<p>The goal of this homework assignment is to allow you to practice using
+<a href="https://en.wikipedia.org/wiki/Functional_programming">functional programming</a> to process data in <a href="https://www.python.org/">Python</a>.  In this assignment,
+you will write a script that <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute-force</a> attacks a large collection of
+passwords using <strong>multiple processes</strong>.  That is, we will use <a href="https://en.wikipedia.org/wiki/Functional_programming">functional
+programming</a> to construct a concurrent application, and then exploit this
+<a href="https://en.wikipedia.org/wiki/Concurrency_(computer_science)">concurrency</a> by using multiple CPU cores to execute the program in
+<a href="https://en.wikipedia.org/wiki/Parallel_computing">parallel</a>.</p>
+<p>For this assignment, record your scripts and any responses to the following
+activities in the in the <code>homework06</code> folder of your <strong>assignments</strong> GitHub
+repository and push your work by <strong>noon Saturday, March 11</strong>.</p>
+<h2 id="activity-0-preparation">Activity 0: Preparation<a class="headerlink" href="#activity-0-preparation" title="Permanent link">&para;</a></h2>
+<p>Before starting this homework assignment, you should first perform a <code>git
+pull</code> to retrieve any changes in your remote <a href="https://github.com">GitHub</a> repository:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ <span style="color: #008000">cd</span> path/to/repository                   <span style="color: #3D7B7B; font-style: italic"># Go to assignments repository</span>
+
+$ git checkout master                     <span style="color: #3D7B7B; font-style: italic"># Make sure we are in master branch</span>
+
+$ git pull --rebase                       <span style="color: #3D7B7B; font-style: italic"># Get any remote changes not present locally</span>
+</code></pre></div>
+
+<p>Next, create a new branch for this assignment:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ git checkout -b homework06              <span style="color: #3D7B7B; font-style: italic"># Create homework06 branch and check it out</span>
+</code></pre></div>
+
+<p>Once this is done, download the <code>Makefile</code> and test scripts:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Go to homework06 folder</span>
+$ <span style="color: #008000">cd</span> homework06
+
+<span style="color: #3D7B7B; font-style: italic"># Download the Makefile</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/Makefile
+
+<span style="color: #3D7B7B; font-style: italic"># Add and commit Makefile</span>
+$ git add Makefile
+$ git commit -m <span style="color: #BA2121">&quot;homework06: Add Makefile&quot;</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Download the test scripts</span>
+$ make test-scripts
+</code></pre></div>
+
+<div class="alert alert-warning">
+<p><strong>Note</strong>, you do not need to add and commit the test scripts since the
+<code>Makefile</code> will automatically download them again whenever you run make.</p>
+</div>
+<p>You are now ready to work on the activities below.</p>
+<div class="alert alert-success">
+<h4 id="frequently-asked-questions"><i class="fa fa-question"></i> Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h4>
+<div class="text-center">
+<iframe allowfullscreen="true" frameborder="0" height="389" mozallowfullscreen="true" src="https://docs.google.com/presentation/d/e/2PACX-1vQzlM57Hved0Z8Xy6EhxArE0hGDmedrqY2-eYeiyPm3_pAIqbihfS72HxMlU2EdlUMKfaEbVMMMFOWA/embed?start=false&amp;loop=false&amp;delayms=3000" webkitallowfullscreen="true" width="480"></iframe>
+</div>
+</div>
+<p><img src="static/img/hulk-smash.png" class="pull-right" style="margin-left: 10px"></p>
+<h2 id="activity-1-hulk-10-points">Activity 1: Hulk (10 Points)<a class="headerlink" href="#activity-1-hulk-10-points" title="Permanent link">&para;</a></h2>
+<p>With various <a href="https://www.wired.com/story/collection-leak-usernames-passwords-billions/">password
+leaks</a>
+being announced on a <a href="https://www.techrepublic.com/article/billions-of-passwords-leaked-online-from-past-data-breaches/">weekly
+basis</a>
+there has been a lot of discussion on <a href="https://lifehacker.com/how-to-create-a-strong-password-1797681069">password
+hygiene</a>
+and <a href="https://www.fbi.gov/contact-us/field-offices/portland/news/press-releases/oregon-fbi-tech-tuesday-building-a-digital-defense-with-passwords">password
+strength</a>.
+There is even a website to check <a href="https://haveibeenpwned.com/">have i been
+pwned</a>.</p>
+<p>In all decent password accounting systems, the raw password is rarely stored.
+Instead a <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic hash</a> such as <a href="https://en.wikipedia.org/wiki/MD5">MD5</a> or <a href="https://en.wikipedia.org/wiki/SHA1">SHA1</a> is used to record a
+user's password digest or checksum and it is these hashes that are leaked to
+outsiders in these all too frequent breaches.  Because these <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic
+hash</a> functions are generally considered <a href="https://en.wikipedia.org/wiki/One-way_function">one-way functions</a>, attackers
+cannot directly obtain the original input password even though they know the
+output of the <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic hash</a>.</p>
+<p>For instance, the <a href="https://en.wikipedia.org/wiki/MD5">MD5</a> digest of <code>goirish</code> is:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ <span style="color: #008000">printf</span> goirish | md5sum
+c761cc3341c91238ba735b26874572a0 -
+</code></pre></div>
+
+<p>As you can see, the string <code>c761cc3341c91238ba735b26874572a0</code> does not
+provide an attacker any clues about the original password <code>goirish</code>.  To
+obtain the original text, attackers often employ <a href="https://arstechnica.com/security/2013/05/how-crackers-make-minced-meat-out-of-your-passwords/">various
+techniques</a>
+such as <a href="https://en.wikipedia.org/wiki/Password_cracking">brute-force cracking</a>.</p>
+<h3 id="task-1-hulkpy">Task 1: <code>hulk.py</code><a class="headerlink" href="#task-1-hulkpy" title="Permanent link">&para;</a></h3>
+<p>For the first task, you are to create <code>hulk.py</code>, which is a script that uses
+<a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute-force</a> to <strong>smash</strong> a set of <a href="https://en.wikipedia.org/wiki/MD5">MD5</a> hashes:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk.py -h
+Usage: hulk.py [-a alphabet -c CORES -l LENGTH -p PREFIX -s HASHES]
+    -a ALPHABET Alphabet to use in permutations
+    -c CORES    CPU Cores to use
+    -l LENGTH   Length of permutations
+    -p PREFIX   Prefix for all permutations
+    -s HASHES   Path of hashes file
+</code></pre></div>
+
+<p>Given an <code>ALPHABET</code> (default is <code>abcdefghijklmnopqrstuvwxyz0123456789</code>),
+<code>hulk.py</code> will compute the <a href="https://en.wikipedia.org/wiki/MD5">MD5</a> hash of every <a href="https://en.wikipedia.org/wiki/Permutation">permutation</a> of the
+<code>ALPHABET</code> for the specified <code>LENGTH</code> and check if it is in the <a href="https://docs.python.org/3/library/stdtypes.html#set">set</a> of
+<code>HASHES</code>.  If a <code>PREFIX</code> is specified, then this should be inserted before
+each candidate <a href="https://en.wikipedia.org/wiki/Permutation">permutation</a>.</p>
+<h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
+<p>For instance, suppose we had a <code>sample.hashes</code> file that contained the
+following <a href="https://en.wikipedia.org/wiki/MD5">MD5</a> checksums:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>0cc175b9c0f1b6a831c399e269772661
+92eb5ffee6ae2fec3ad71c777531578f
+4a8a08f09d37b73795649038408b5f33
+900150983cd24fb0d6963f7d28e17f72
+</code></pre></div>
+
+<p>If we executed <code>hulk.py</code> with a <code>LENGTH</code> of <code>1</code>, we should get the following
+result:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk.py -l 1 -s sample.hashes
+a
+b
+c
+</code></pre></div>
+
+<p>That is, <code>hulk.py</code> determined that three of the hashes correspond to the
+passwords <code>a</code>, <code>b</code>, and <code>c</code>.</p>
+<p>If we executed <code>hulk.py</code> with a <code>LENGTH</code> of <code>2</code> and a <code>PREFIX</code> of <code>a</code>, we
+should get the following result:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk.py -l 2 -s sample.hashes -p a
+abc
+</code></pre></div>
+
+<p>That is, <code>hulk.py</code> determined that 1 of the hashes corresponds to the
+password <code>abc</code>.  Note, we could have achieved the same results by executing:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk.py -l 3 -s sample.hashes
+abc
+</code></pre></div>
+
+<p>The difference is the former searches each <a href="https://en.wikipedia.org/wiki/Permutation">permutation</a> in the form <code>aXX</code>
+where <code>X</code> is a letter from the <code>ALPHABET</code> due to the <code>PREFIX</code> of <code>a</code>, while
+the latter searches each <a href="https://en.wikipedia.org/wiki/Permutation">permutation</a> in the form <code>XXX</code>.</p>
+<p>Finally, if <code>CORES</code> is greater than <code>1</code> and the <code>LENGTH</code> is greater than <code>1</code>,
+the script will use the <a href="https://docs.python.org/3/library/concurrent.futures.html">concurrent.futures</a> module to <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute-force</a> passwords
+in parallel with the specified number of <code>CORES</code>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk.py -l 1 -c 2 -s sample.hashes
+a
+b
+c
+</code></pre></div>
+
+<h4 id="skeleton-code">Skeleton Code<a class="headerlink" href="#skeleton-code" title="Permanent link">&para;</a></h4>
+<p>To help you get started, the instructor has provided you with the following
+skeleton code:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Download skeleton code</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/hulk.py
+</code></pre></div>
+
+<p>The <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/hulk.py">skeleton code</a> contains the following:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">concurrent.futures</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">hashlib</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">os</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">string</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Constants</span>
+
+ALPHABET <span style="color: #666666">=</span> string<span style="color: #666666">.</span>ascii_lowercase <span style="color: #666666">+</span> string<span style="color: #666666">.</span>digits
+
+<span style="color: #3D7B7B; font-style: italic"># Functions</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">usage</span>(exit_code<span style="color: #666666">=0</span>):
+    progname <span style="color: #666666">=</span> os<span style="color: #666666">.</span>path<span style="color: #666666">.</span>basename(sys<span style="color: #666666">.</span>argv[<span style="color: #666666">0</span>])
+    <span style="color: #008000">print</span>(<span style="color: #BA2121">f&#39;&#39;&#39;Usage: </span><span style="color: #A45A77; font-weight: bold">{</span>progname<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> [-a ALPHABET -c CORES -l LENGTH -p PATH -s HASHES]</span>
+<span style="color: #BA2121">    -a ALPHABET Alphabet to use in permutations</span>
+<span style="color: #BA2121">    -c CORES    CPU Cores to use</span>
+<span style="color: #BA2121">    -l LENGTH   Length of permutations</span>
+<span style="color: #BA2121">    -p PREFIX   Prefix for all permutations</span>
+<span style="color: #BA2121">    -s HASHES   Path of hashes file&#39;&#39;&#39;</span>)
+    sys<span style="color: #666666">.</span>exit(exit_code)
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">md5sum</span>(s):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Compute md5 digest for given string. &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">return</span> <span style="color: #BA2121">&#39;&#39;</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">permutations</span>(length, alphabet<span style="color: #666666">=</span>ALPHABET):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Recursively yield all permutations of the given length using the</span>
+<span style="color: #BA2121; font-style: italic">    provided alphabet. &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">yield</span> <span style="color: #008000; font-weight: bold">None</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">flatten</span>(sequence):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Flatten sequence of iterators. &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">yield</span> <span style="color: #008000; font-weight: bold">None</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">crack</span>(hashes, length, alphabet<span style="color: #666666">=</span>ALPHABET, prefix<span style="color: #666666">=</span><span style="color: #BA2121">&#39;&#39;</span>):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Return all password permutations of specified length that are in hashes</span>
+<span style="color: #BA2121; font-style: italic">    by sequentially trying all permutations. &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">return</span> []
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">whack</span>(arguments):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Call the crack function with the specified list of arguments &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">return</span> []
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">smash</span>(hashes, length, alphabet<span style="color: #666666">=</span>ALPHABET, prefix<span style="color: #666666">=</span><span style="color: #BA2121">&#39;&#39;</span>, cores<span style="color: #666666">=1</span>):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Return all password permutations of specified length that are in hashes</span>
+<span style="color: #BA2121; font-style: italic">    by concurrently subsets of permutations concurrently.</span>
+<span style="color: #BA2121; font-style: italic">    &#39;&#39;&#39;</span>
+    <span style="color: #008000; font-weight: bold">return</span> []
+
+<span style="color: #3D7B7B; font-style: italic"># Main Execution</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">main</span>():
+    arguments   <span style="color: #666666">=</span> sys<span style="color: #666666">.</span>argv[<span style="color: #666666">1</span>:]
+    alphabet    <span style="color: #666666">=</span> ALPHABET
+    cores       <span style="color: #666666">=</span> <span style="color: #666666">1</span>
+    hashes_path <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;hashes.txt&#39;</span>
+    length      <span style="color: #666666">=</span> <span style="color: #666666">1</span>
+    prefix      <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;&#39;</span>
+
+<span style="color: #008000; font-weight: bold">if</span> <span style="color: #19177C">__name__</span> <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;__main__&#39;</span>:
+    main()
+</code></pre></div>
+
+<p>You are to complete the sections marked <code>TODO</code> in order to complete the
+<code>hulk.py</code> script.</p>
+<div class="alert alert-success">
+<h4 id="hints"><i class="fa fa-lightbulb-o"></i> Hints<a class="headerlink" href="#hints" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p>For <code>md5sum</code>, you <strong>must</strong> compute the <a href="https://en.wikipedia.org/wiki/MD5">MD5</a> hash of a string by using the
+<a href="https://docs.python.org/3/library/hashlib.html">hashlib</a> library.  To convert a <a href="https://docs.python.org/3/howto/unicode.html#converting-to-bytes">unicode</a> string into <a href="https://docs.python.org/3/library/stdtypes.html#binary-sequence-types-bytes-bytearray-memoryview">bytes</a>, you can call
+the <a href="https://docs.python.org/3/library/stdtypes.html#str.encode">str.encode</a> method of the string object.</p>
+</li>
+<li>
+<p>For <code>permutations</code>, you <strong>must</strong> use a <a href="https://en.wikipedia.org/wiki/Recursion_(computer_science)">recursive</a> algorithm to implement
+a <a href="https://docs.python.org/3/howto/functional.html#generators">generator</a> using the <a href="https://docs.python.org/3/reference/simple_stmts.html#yield">yield</a> statement.  You may not use any of the
+utilities in the <a href="https://docs.python.org/3/library/itertools.html">itertools</a> module for this function.</p>
+<p>For the <strong>base</strong> case, you will want to consider what happens with a
+<code>length</code> of <code>1</code> and for the <strong>recursive</strong> case, how you can combine the
+<code>alphabet</code> with the results of <code>permutations</code> of <code>length - 1</code> to <code>yield</code>
+each <strong>permutation</strong> of the specified <code>length</code>.</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">if</span> length <span style="color: #666666">==</span> <span style="color: #666666">1</span>:   <span style="color: #3D7B7B; font-style: italic"># Base case</span>
+    <span style="color: #008000; font-weight: bold">yield</span> each letter <span style="color: #AA22FF; font-weight: bold">in</span> alphabet
+<span style="color: #008000; font-weight: bold">else</span>:             <span style="color: #3D7B7B; font-style: italic"># Recursive case</span>
+    <span style="color: #008000; font-weight: bold">yield</span> the combination of each letter <span style="color: #008000; font-weight: bold">with</span> each permutation of length <span style="color: #666666">-</span> <span style="color: #666666">1</span>
+</code></pre></div>
+
+</li>
+<li>
+<p>For <code>flatten</code>, you <strong>must</strong> use the <a href="https://docs.python.org/3/reference/simple_stmts.html#yield">yield</a> statement to implement a
+<a href="https://docs.python.org/3/howto/functional.html#generators">generator</a> that takes a <strong>sequence of iterables</strong> and converts it into a
+single sequence of values from the nested data.</p>
+<p>The idea with this function is that given a nested sequence of iterators
+such as <code>[[A, B, C], [D, E, F]]</code>, you <code>yield</code> each item from the
+subsequences: <code>A, B, C, D, E, F</code>.</p>
+</li>
+<li>
+<p>For <code>crack</code>, you <strong>must</strong> implement the function using only <a href="https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions">list
+comprehensions</a> or <a href="https://www.python.org/dev/peps/pep-0289/">generator expressions</a> (you can use multiple ones).</p>
+<p>Pay careful attention to <strong>not</strong> use <strong>too much memory</strong> in this
+function, particularly when calling <code>permutations</code>.</p>
+</li>
+<li>
+<p>For <code>whack</code>, you <strong>must</strong> implement the function by calling the <code>crack</code>
+function with the provided list of arguments.</p>
+<p>This function exists because <code>map</code> can only pass a single argument to the
+function it applies.  To workaround this limitation, we create the
+<code>whack</code> helper function which takes a <code>tuple</code> of arguments which can then
+unpack to call <code>crack</code>.  That is, <code>whack</code> takes a <code>tuple</code> of <strong>four</strong>
+items which correspond to the parameters to <code>crack</code> and we simply need to
+call <code>crack</code> with these items:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Calling whack should result in calling crack with the arguments</span>
+<span style="color: #3D7B7B; font-style: italic"># tuple unpacked as parameters.</span>
+whack((hashes, length, alphabet, prefix)) <span style="color: #666666">-&gt;</span> crack(hashes, length, alphabet, prefix)
+</code></pre></div>
+
+</li>
+<li>
+<p>For <code>smash</code>, you <strong>must</strong> implement the function by using the <code>map</code> method
+of the <a href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ProcessPoolExecutor">ProcessPoolExecutor</a> from the <a href="https://docs.python.org/3/library/concurrent.futures.html">concurrent.futures</a> module in order to
+take advantage of multiple CPU <code>cores</code>.</p>
+<p>To allow for parallel execution, you will need to do <strong>divide up the
+work</strong> normally done by one process. The easiest way to accomplish this
+is by taking advantage of the <code>prefix</code> feature of <code>crack</code>.</p>
+<p>For instance, if the specified <code>LENGTH</code> is <code>4</code>, you can <code>crack</code> passwords
+of length <code>3</code> with prefixes of <code>[a, b, ..., 9]</code> to achieve the same result:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>Passwords of length 4     Prefixes + Passwords of length 3
+
+aaaa                      a + aaa -&gt; aaaa
+aaab                      a + aab -&gt; aaab
+....                      ....
+baaa                      b + aaa -&gt; baaa
+baab                      b + aab -&gt; baab
+....                      ....
+</code></pre></div>
+
+<p>In <code>smash</code>, you will need to create an <code>arguments</code> sequence that consists
+of the argument tuples to pass to <code>whack</code>.  As explained above, each tuple
+consists of the arguments to <code>crack</code>: <code>hashes</code>, <code>length</code>, <code>alphabet</code>,
+<code>prefix</code>.  Based on the previous description, only the <code>length</code> and
+<code>prefix</code> arguments need to be modified in the arguments sequence:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>(original hashes, new length, original alphabet, new prefix)
+</code></pre></div>
+
+<p>For simplicity, we suggest that you use each letter in the <code>alphabet</code> as
+part of the <code>prefix</code> in the arguments tuple, while keeping in mind that
+you still need to account for the <code>prefix</code> passed to <code>smash</code> itself.
+Because we are now using the <code>prefix</code> feature of <code>crack</code>, you will also
+need to update the <code>length</code> argument in the <code>tuple</code>.</p>
+<p>Your code should look something like this:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Generator expression representing a sequence of arguments to pass</span>
+<span style="color: #3D7B7B; font-style: italic"># to `whack` (hashes, length, alphabet remain constant, but prefix</span>
+<span style="color: #3D7B7B; font-style: italic"># should change for each argument tuple).</span>
+arguments <span style="color: #666666">=</span> ((<span style="color: #666666">...</span>) <span style="color: #008000; font-weight: bold">for</span> <span style="color: #666666">...</span> <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #666666">...</span>)
+
+<span style="color: #3D7B7B; font-style: italic"># Create a ProcessPoolExecutor and then apply whack to the</span>
+<span style="color: #3D7B7B; font-style: italic"># arguments</span>
+<span style="color: #008000; font-weight: bold">with</span> concurrent<span style="color: #666666">.</span>futures<span style="color: #666666">.</span>ProcessPoolExecutor(cores) <span style="color: #008000; font-weight: bold">as</span> executor:
+    <span style="color: #666666">...</span> executor<span style="color: #666666">.</span>map(<span style="color: #666666">...</span>)
+</code></pre></div>
+
+<p>Because the <code>executor.map</code> will return a sequence of sequences, you will
+want to use the <code>flatten</code> function you wrote to convert the result into a
+single sequence.</p>
+</li>
+<li>
+<p>You can parse the command line options as we have done in the past, or you
+can investigate using <a href="https://docs.python.org/3/library/argparse.html#module-argparse">argparse</a> or <a href="https://docs.python.org/3/library/getopt.html">getopt</a>.</p>
+</li>
+<li>
+<p>You <strong>must</strong> use a <a href="https://docs.python.org/3/library/stdtypes.html#set">set</a> to store the collection of <a href="https://en.wikipedia.org/wiki/MD5">MD5</a> hashes.</p>
+</li>
+</ol>
+</div>
+<h3 id="task-2-testing">Task 2: Testing<a class="headerlink" href="#task-2-testing" title="Permanent link">&para;</a></h3>
+<p>To aid you in testing the <code>hulk.py</code> script, we are providing you with
+<code>test_hulk.sh</code>, which you can use as follows:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Download Makefile</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/Makefile
+
+<span style="color: #3D7B7B; font-style: italic"># Download test script, hashes.txt, and run test</span>
+$ make
+
+<span style="color: #3D7B7B; font-style: italic"># Run test script manually</span>
+$ ./test_hulk.sh
+Testing hulk.py ...
+   Unit Tests                               ... <span style="color: #666666">2</span>.00 / <span style="color: #666666">2</span>.00
+   Usage                                    ... Success
+   Hulk LENGTH <span style="color: #666666">1</span>                            ... Success
+   Hulk LENGTH <span style="color: #666666">1</span> <span style="color: #666666">(</span>ALPHABET: abc<span style="color: #666666">)</span>            ... Success
+   Hulk LENGTH <span style="color: #666666">2</span>                            ... Success
+   Hulk LENGTH <span style="color: #666666">2</span> <span style="color: #666666">(</span>ALPHABET: pbui<span style="color: #666666">)</span>           ... Success
+   Hulk LENGTH <span style="color: #666666">3</span>                            ... Success
+   Hulk LENGTH <span style="color: #666666">3</span> <span style="color: #666666">(</span>ALPHABET: abc<span style="color: #666666">)</span>            ... Success
+   Hulk LENGTH <span style="color: #666666">4</span>                            ... Success
+   Hulk LENGTH <span style="color: #666666">4</span> <span style="color: #666666">(</span>ALPHABET: kfriday<span style="color: #666666">)</span>        ... Success
+   Hulk LENGTH <span style="color: #666666">2</span> <span style="color: #666666">(</span>CORES: <span style="color: #666666">2)</span>                 ... Success
+   Hulk LENGTH <span style="color: #666666">3</span> <span style="color: #666666">(</span>CORES: <span style="color: #666666">2)</span>                 ... Success
+   Hulk LENGTH <span style="color: #666666">4</span> <span style="color: #666666">(</span>CORES: <span style="color: #666666">2)</span>                 ... Success
+   Hulk LENGTH <span style="color: #666666">1</span> <span style="color: #666666">(</span>PREFIX: a<span style="color: #666666">)</span>                ... Success
+   Hulk LENGTH <span style="color: #666666">1</span> <span style="color: #666666">(</span>PREFIX: <span style="color: #666666">1</span>, CORES: <span style="color: #666666">2)</span>      ... Success
+   Hulk LENGTH <span style="color: #666666">2</span> <span style="color: #666666">(</span>PREFIX: a<span style="color: #666666">)</span>                ... Success
+   Hulk LENGTH <span style="color: #666666">2</span> <span style="color: #666666">(</span>PREFIX: a, CORES: <span style="color: #666666">2)</span>      ... Success
+   Hulk LENGTH <span style="color: #666666">3</span> <span style="color: #666666">(</span>PREFIX: a<span style="color: #666666">)</span>                ... Success
+   Hulk LENGTH <span style="color: #666666">3</span> <span style="color: #666666">(</span>PREFIX: a, CORES: <span style="color: #666666">2)</span>      ... Success
+
+   Score <span style="color: #666666">10</span>.00 / <span style="color: #666666">10</span>.00
+  Status Success
+</code></pre></div>
+
+<div class="alert alert-warning">
+<h4 id="timeout-failures"><i class="fa fa-clock-o"></i> Timeout Failures<a class="headerlink" href="#timeout-failures" title="Permanent link">&para;</a></h4>
+<p>If you fail a function test but the output appears correct, it is mostly
+likely that your code is <strong>too slow</strong>.  In addition to checking the output of
+your commands, the <code>test_hulk.sh</code> uses the <code>timeout</code> command to ensure your
+program does not run for too long.</p>
+<p>Carefully reconsider the <strong>data structures</strong> and <strong>functional programming</strong>
+methods you employed if your code is timing out.</p>
+</div>
+<p>In addition to the test script, there is also <code>hulk_test.py</code>, which contains
+<a href="https://en.wikipedia.org/wiki/Unit_testing">unit tests</a> for most of the functions you need to implement.  You can
+execute these tests manually as follows:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk_test.py -v
+test_00_md5sum <span style="color: #666666">(</span>__main__.HulkTestCase<span style="color: #666666">)</span> ... ok
+test_01_permutations <span style="color: #666666">(</span>__main__.HulkTestCase<span style="color: #666666">)</span> ... ok
+test_02_flatten <span style="color: #666666">(</span>__main__.HulkTestCase<span style="color: #666666">)</span> ... ok
+test_03_crack <span style="color: #666666">(</span>__main__.HulkTestCase<span style="color: #666666">)</span> ... ok
+test_04_whack <span style="color: #666666">(</span>__main__.HulkTestCase<span style="color: #666666">)</span> ... ok
+test_05_smash <span style="color: #666666">(</span>__main__.HulkTestCase<span style="color: #666666">)</span> ... ok
+
+----------------------------------------------------------------------
+Ran <span style="color: #666666">6</span> tests <span style="color: #008000; font-weight: bold">in</span> <span style="color: #666666">0</span>.168s
+
+OK
+</code></pre></div>
+
+<p>This will test each of the five functions individually and thus allow you to
+build and test your program one function at a time.</p>
+<div class="alert alert-success">
+<h4 id="incremental-development"><i class="fa fa-code"></i> Incremental Development<a class="headerlink" href="#incremental-development" title="Permanent link">&para;</a></h4>
+<p>Do not try to write the whole program at once.  Implement <strong>one feature at a
+time</strong> and <strong>verify</strong> that it works.  The <a href="https://en.wikipedia.org/wiki/Unit_testing">unit tests</a> are provided to allow
+you to test individual components, while the <code>test_hulk.sh</code> is given to
+enable you to test the completed solution.</p>
+</div>
+<h2 id="activity-2-deadpool-1-point">Activity 2: Deadpool (1 Point)<a class="headerlink" href="#activity-2-deadpool-1-point" title="Permanent link">&para;</a></h2>
+<p>Once you are confident that your program is correct, you are to use <code>hulk.py</code>
+to <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute-force</a> crack set of <code>12124</code> <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/hashes.txt">password hashes</a> found at:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #767600">https:</span><span style="color: #3D7B7B; font-style: italic">//raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/hashes.txt</span>
+</code></pre></div>
+
+<p>To keep track of who has cracked the most passwords, you can submit your set
+of discovered passwords to the <a href="http://xavier.h4x0r.space:9111/">deadpool</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ cat PASSWORDS | curl --data-binary @- http://xavier.h4x0r.space:9111/NETID
+</code></pre></div>
+
+<p>Replace <code>PASSWORDS</code> with the name of the file with your passwords and <code>NETID</code>
+with your Notre Dame NetID:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Generate passwords of length 1 and store them in passwords.txt</span>
+$ ./hulk.py -l <span style="color: #666666">1</span> | tee -a passwords.txt
+...
+
+<span style="color: #3D7B7B; font-style: italic"># Upload passwords.txt</span>
+$ cat passwords.txt | curl --data-binary @- http://xavier.h4x0r.space:9111/pbui
+<span style="color: #666666">{</span><span style="color: #BA2121">&quot;timestamp&quot;</span>: <span style="color: #666666">1488333215</span>.967784, <span style="color: #BA2121">&quot;passwords&quot;</span>: <span style="color: #666666">36}</span>
+</code></pre></div>
+
+<p>For full credit, you <strong>must</strong> crack at least <code>8000</code> passwords.  There are
+<code>12124</code> total hashes.  Each password is no more than <code>8</code> characters long and
+only consists of lowercase letters and numeric digits.</p>
+<div class="alert alert-warning">
+<h4 id="chegg-passwords"><i class="fa fa-warning"></i> Chegg Passwords<a class="headerlink" href="#chegg-passwords" title="Permanent link">&para;</a></h4>
+<p>Many of the passwords in the <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/hashes.txt">password hashes</a> collection were pulled from
+a recent <a href="https://ndsmcobserver.com/2019/10/saint-marys-email-addresses-appear-in-credential-dump-following-chegg-data-breach/">Chegg password leak</a>.</p>
+</div>
+<div class="alert alert-info">
+<h4 id="parallel-universe"><i class="fa fa-bolt"></i> Parallel Universe<a class="headerlink" href="#parallel-universe" title="Permanent link">&para;</a></h4>
+<p>To speed up your computations, consider using different values for
+<code>CORES</code>: <br><br></p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk.py -l <span style="color: #666666">6</span> -c <span style="color: #666666">2</span>  <span style="color: #3D7B7B; font-style: italic"># Use 2 processes</span>
+</code></pre></div>
+
+<p>To find out how many cores a Linux machine has, you can do:<br><br></p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ lscpu
+</code></pre></div>
+
+</div>
+<div class="alert alert-danger">
+<h4 id="shared-resources"><i class="fa fa-handshake-o"></i> Shared Resources<a class="headerlink" href="#shared-resources" title="Permanent link">&para;</a></h4>
+<p>Remember that you need to <strong>share</strong> the <strong>student</strong> machines with all the
+other students in class.</p>
+<p><strong>Therefore, do not run <code>hulk.py</code> on lengths larger than <code>6</code>...  otherwise
+you will take up significant CPU resources away from other students for long
+periods of time.</strong></p>
+<p>If you want to crack passwords of length greater than <code>6</code>, you will need to
+run <a href="https://hashcat.net/hashcat/">hashcat</a> on your own machines as explained in the <strong>Guru Point</strong>.</p>
+</div>
+<h2 id="activity-3-quiz-1-point">Activity 3: Quiz (1 Point)<a class="headerlink" href="#activity-3-quiz-1-point" title="Permanent link">&para;</a></h2>
+<p>Once you have completed all the activities above, you are to complete the
+following <strong>reflection quiz</strong>:</p>
+<div id="quiz-questions"></div>
+
+<div id="quiz-responses"></div>
+
+<script src="static/js/dredd-quiz.js"></script>
+<script>
+loadQuiz('static/json/homework06.json');
+</script>
+
+<pre style="display: none;" id="dr-container" class="codehilite"><code id="dredd-response"></code></pre>
+
+<p>As with <a href="reading01.html">Reading 01</a>, you will need to store your answers in a
+<code>homework06/answers.json</code> file.  You can use the form above to generate the
+contents of this file, or you can write the <a href="https://www.json.org">JSON</a> by hand.</p>
+<p>To test your quiz, you can use the <code>check.py</code> script:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ../.scripts/check.py
+Checking homework06 quiz ...
+     Q01 <span style="color: #666666">0</span>.50
+     Q02 <span style="color: #666666">0</span>.30
+     Q03 <span style="color: #666666">0</span>.20
+   Score <span style="color: #666666">1</span>.00 / <span style="color: #666666">1</span>.00
+  Status Success
+</code></pre></div>
+
+<h2 id="guru-point-2-points">Guru Point (2 Points)<a class="headerlink" href="#guru-point-2-points" title="Permanent link">&para;</a></h2>
+<p>This week there are two different opportunities for extra credit.  You may
+choose to do one, both, or none of them.</p>
+<div class="alert alert-success">
+<h4 id="self-service-extension"><i class="fa fa-calendar"></i> Self-Service Extension<a class="headerlink" href="#self-service-extension" title="Permanent link">&para;</a></h4>
+<p>Remember that you can always <strong>forgo</strong> this Guru Point for <strong>two extra days</strong>
+to do the homework.  That is, if you need an extension, you can simply skip
+the Guru Point and you will automatically have until Monday to complete the
+assignment for full credit.</p>
+<p>Just leave a note on your <strong>Pull Request</strong> of your intensions.</p>
+</div>
+<p><img src="static/img/hashcat-logo.jpg" class="pull-right" style="margin-left: 10px"></p>
+<h3 id="hash-cat">Hash Cat<a class="headerlink" href="#hash-cat" title="Permanent link">&para;</a></h3>
+<p>As can be seen, cracking passwords using <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute-force</a> is extremely slow,
+especially on <a href="https://en.wikipedia.org/wiki/Central_processing_unit">CPUs</a>.  For extra credit, you are to download and use the
+<a href="https://hashcat.net/hashcat/">hashcat</a> program <strong>on your own computer</strong>:</p>
+<blockquote>
+<p><a href="https://hashcat.net/hashcat/">hashcat</a> is the world's fastest and most advanced password recovery
+utility, supporting five unique modes of attack for over 200 highly-optimized
+hashing algorithms. hashcat currently supports CPUs, GPUs, and other hardware
+accelerators on Linux, Windows, and macOS, and has facilities to help enable
+distributed password cracking.</p>
+</blockquote>
+<p>The secret to <a href="https://hashcat.net/hashcat/">hashcat</a>'s speed is that it can take advantage of your <a href="https://en.wikipedia.org/wiki/Graphics_processing_unit">GPU</a>
+(aka. your video card), which turns out to be a massively parallel computing
+system (basically a commodity supercomputer).  You will learn more about the
+<a href="https://en.wikipedia.org/wiki/Graphics_processing_unit">GPU</a>'s power in your <strong>Computer Architecture</strong> class, but for this extra
+credit, all you need to do is take advantage of it by using <a href="https://hashcat.net/hashcat/">hashcat</a>.</p>
+<div class="alert alert-danger">
+<h4 id="discrete-video-card"><i class="fa fa-tachometer"></i> Discrete Video Card<a class="headerlink" href="#discrete-video-card" title="Permanent link">&para;</a></h4>
+<p>For optimal performance, your computer should use a <strong>discrete</strong> video card
+from <a href="https://www.nvidia.com/">Nvidia</a> or <a href="https://www.amd.com/">AMD</a>.  Moreover, you will need to have the proper drivers
+and <a href="https://www.khronos.org/opencl/">OpenCL</a> software installed for <a href="https://hashcat.net/hashcat/">hashcat</a> to take advantage of your
+<a href="https://en.wikipedia.org/wiki/Graphics_processing_unit">GPU</a>.</p>
+</div>
+<p>Once you have downloaded <a href="https://hashcat.net/hashcat/">hashcat</a> <strong>to your own computer</strong> and the <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/hashes.txt">password
+hashes</a> file for this assignment, you should use <a href="https://hashcat.net/hashcat/">hashcat</a> to crack passwords
+of length <code>7</code> and <code>8</code>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Brute-force MD5 hashed passwords of length 7 with lowercase letters and digits</span>
+$ hashcat -a <span style="color: #666666">3</span> -m <span style="color: #666666">0</span> -1 <span style="color: #BA2121">&#39;?l?d&#39;</span> -o passwords.7 --potfile-disable hashes.txt <span style="color: #BA2121">&#39;?1?1?1?1?1?1?1&#39;</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Brute-force MD5 hashed passwords of length 8 with lowercase letters and digits</span>
+$ hashcat -a <span style="color: #666666">3</span> -m <span style="color: #666666">0</span> -1 <span style="color: #BA2121">&#39;?l?d&#39;</span> -o passwords.8 --potfile-disable hashes.txt <span style="color: #BA2121">&#39;?1?1?1?1?1?1?1?1&#39;</span>
+</code></pre></div>
+
+<div class="alert alert-success">
+<p><strong>Note</strong>: for <strong>macOS</strong> users, you may wish to install <a href="https://hashcat.net/hashcat/">hashcat</a> via
+<a href="https://brew.sh/">Homebrew</a>.</p>
+</div>
+<div class="alert alert-warning">
+<h4 id="note-for-m1-promax-users"><i class="fa fa-apple"></i> Note for M1 Pro/Max Users:<a class="headerlink" href="#note-for-m1-promax-users" title="Permanent link">&para;</a></h4>
+<p>The current release of <code>hashcat</code> does not have support for the newest MacBook
+Pros with the Apple Silicon M1 Pro/Max processors. Disregard these
+instructions if you have an <strong>Intel Mac</strong>. If you still wish to complete the
+guru point on these machines, it is possible if you <strong>compile the latest
+development version from the project's GitHub</strong>. To do so, perform the
+following instructions:</p>
+<ol>
+<li>
+<p>Ensure you have <code>clang</code> installed on your MacBook Pro. This is a C++
+compiler comparable to <code>gcc</code> on Linux. You can check if you have it installed
+by running <code>clang --version</code> inside of a terminal.</p>
+</li>
+<li>
+<p>If it is not installed, then you must install <code>Xcode</code> from the <strong>MacOS App
+Store.</strong> <code>Xcode</code> will not be needed for this project, but includes some
+common development tools, including <code>clang</code>. <code>Xcode</code> is a large program; it
+may take a while to install.</p>
+</li>
+<li>
+<p>Clone the repository for <code>hashcat</code>, found at the following
+<a href="https://github.com/hashcat/hashcat">link</a>.</p>
+</li>
+<li>
+<p><code>cd</code> into the <code>hashcat/</code> folder that was now created.</p>
+</li>
+<li>
+<p>Run <code>make</code> to compile the program. This program is large, so give it some
+time to compile. </p>
+</li>
+<li>
+<p>You should now see a <code>hashcat</code> executable file in this folder. You can run
+the commands above, but replace <code>hashcat</code> with <code>./hashcat</code> to use the local
+version in your current directory, and add <code>-D2</code> to use your MacBook's GPU.
+Here is an example usage:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>./hashcat -a 3 -m 0 -1 &#39;?l?d&#39; -o passwords.7 -D2 --potfile-disable [PATH_TO_YOUR_HASHES.TXT] &#39;?1?1?1?1?1?1?1&#39;
+</code></pre></div>
+
+</li>
+</ol>
+</div>
+<div class="alert alert-warning">
+<h4 id="this-might-take-a-while"><i class="fa fa-clock-o"></i> This Might Take A While<a class="headerlink" href="#this-might-take-a-while" title="Permanent link">&para;</a></h4>
+<p>Even though a <a href="https://en.wikipedia.org/wiki/Graphics_processing_unit">GPU</a> is basically a commodity supercomputer, cracking
+passwords using <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute-force</a> still takes time.  With a <strong>discrete</strong> <a href="https://www.nvidia.com/">Nvidia</a>
+<strong>GTX 980</strong> in a desktop machine, cracking all passwords of length <code>8</code> took
+about <strong>20 minutes</strong>.  On the other hand, with an <strong>integrated</strong> <a href="https://www.intel.com/">Intel</a> 620
+in a laptop, cracking all passwords of length <code>8</code> had a time estimate of
+about <code>2</code> days.</p>
+<p>This is still dramatically better than using say <strong>hundreds</strong> of machines for
+<strong>hours</strong> to crack passwords (which is what we have done in the past).</p>
+</div>
+<p>After executing these commands, the cracked passwords should be in the
+<code>passwords.7</code> and <code>passwords.8</code> files.  You will need to use either <a href="https://www.python.org/">Python</a>
+or <a href="https://en.wikipedia.org/wiki/Unix_shell">shell</a> to extract the passwords and append them to the list of passwords
+of lengths <code>1</code> - <code>6</code> you found using <code>hulk.py</code>.</p>
+<div class="alert alert-info">
+<h4 id="verification"><i class="fa fa-check"></i> Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h4>
+<p>To get credit for this Guru Point, you are to upload at least <code>10,000</code>
+passwords to <a href="http://xavier.h4x0r.space:9111/">deadpool</a>.  You have up until a week <strong>after</strong> this assignment
+is due to verify your Guru Point (note, this means it is due at the <strong>end of
+Spring Break</strong>).</p>
+</div>
+<h3 id="tqdm">TQDM<a class="headerlink" href="#tqdm" title="Permanent link">&para;</a></h3>
+<p>Since <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute-force</a> cracking passwords can take a while, it would be nice to
+give the user a <strong>progress bar</strong> so they can have an idea of how many
+passwords <code>hulk.py</code> has checked and how much time is left.</p>
+<p>For extra credit, you are to implement a <strong>progress bar</strong> in <code>hulk.py</code> using
+the <a href="https://tqdm.github.io/">tqdm</a> library.  Given a <code>-P</code> flag, <code>hulk.py</code> should display output like
+this:</p>
+<div class="thumbnail text-center">
+  <script id="asciicast-eKxx0MNBsiqEoVpeaORfrnkuE" src="https://asciinema.org/a/eKxx0MNBsiqEoVpeaORfrnkuE.js" async></script>
+</div>
+
+<div class="alert alert-warning">
+<p><strong>Note</strong>: It is okay if the multi-core display is a bit <em>janky</em> (ie. notice
+the multiple <code>Crack(4, e)</code> bars).  </p>
+<p>There are some <strong>race conditions</strong> when printing out to the terminal from
+multiple processes and you are not expected to resolve them.  Simply show a
+progress bar for each <code>crack</code> function and that should be sufficient.</p>
+</div>
+<div class="alert alert-info">
+<h4 id="verification_1"><i class="fa fa-check"></i> Verification<a class="headerlink" href="#verification_1" title="Permanent link">&para;</a></h4>
+<p>To get credit for this Guru Point, show your <code>hulk.py</code> displaying a
+<strong>progress bar</strong> using <a href="https://tqdm.github.io/">tqdm</a> to a TA to verify (or attached a video to your
+<strong>Pull Request</strong>). You have up until a week <strong>after</strong> this assignment is due
+to verify your Guru Point.</p>
+</div>
+<h2 id="submission">Submission<a class="headerlink" href="#submission" title="Permanent link">&para;</a></h2>
+<p>To submit your assignment, please commit your work to the <code>homework06</code> folder
+of your <code>homework06</code> branch in your <strong>assignments</strong> <a href="https://github.com">GitHub</a> repository.
+Your <code>homework06</code> folder should only contain the following files:</p>
+<ul>
+<li><code>Makefile</code></li>
+<li><code>README.md</code></li>
+<li><code>answers.json</code></li>
+<li><code>hulk.py</code></li>
+<li><code>passwords.txt</code></li>
+</ul>
+<p>The <code>passwords.txt</code> should contain a list of all all the passwords you found
+from the <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework06/hashes.txt">password hashes</a> collection.</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># BE SURE TO DO THE PREPARATION STEPS IN ACTIVITY 0</span>
+<span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+
+$ <span style="color: #008000">cd</span> homework06                           <span style="color: #3D7B7B; font-style: italic"># Go to Homework 06 directory</span>
+...
+$ git add Makefile                        <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add hulk.py                         <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework06: Activity 1&quot;</span>  <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add passwords.txt                   <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework06: Activity 2&quot;</span>  <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add answers.json                    <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework06: Activity 3&quot;</span>  <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git push -u origin homework06           <span style="color: #3D7B7B; font-style: italic"># Push branch to GitHub</span>
+</code></pre></div>
+
+<div class="alert alert-danger">
+<h4 id="pull-request"><i class="fa fa-github"></i> Pull Request<a class="headerlink" href="#pull-request" title="Permanent link">&para;</a></h4>
+<p>Remember to create a <strong>Pull Request</strong> and assign the appropriate TA from the
+<a href="reading07_tas.html">Reading 07 TA List</a>.</p>
+<p><strong>DO NOT MERGE</strong> your own <strong>Pull Request</strong>.  The TAs use open <strong>Pull
+Requests</strong> to keep track of which assignments to grade.  Closing them
+yourself will cause a delay in grading and confuse the TAs.</p>
+</div>
+
+
+	    <div class="row">
+		<hr/>
+
+		<footer class="text-center">
+		    <p class="text-muted">
+		    <small>
+		    Built using
+		    <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>,
+		    <a href="http://fortawesome.github.com/Font-Awesome/">Font Awesome</a>, and
+		    <a href="http://www.python.org/">Python</a>.
+		    <br/>
+		    &copy; 2023 <a href="http://www.nd.edu">University of Notre Dame</a>
+		    </small>
+		    </p>
+		</footer>
+	    </div>
+
+	</div> <!-- /container -->
+
+	<!-- Bootstrap core JavaScript
+	================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	
+    </body>
+</html>
+
