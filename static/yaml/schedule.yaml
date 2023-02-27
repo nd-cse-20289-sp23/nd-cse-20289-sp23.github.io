@@ -181,6 +181,8 @@
         items:
           - name:       Slides 09
             link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=85b41692-ecad-4f06-b640-afb6013e5c0e
 
       - date:           Wed 03/01
         topics:         JSON
