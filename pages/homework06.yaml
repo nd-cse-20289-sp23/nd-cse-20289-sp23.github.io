@@ -654,42 +654,6 @@ body:       |
   </div>
 
   <div class="alert alert-warning" markdown="1">
-  #### <i class="fa fa-apple"></i> Note for M1 Pro/Max Users:
-
-  The current release of `hashcat` does not have support for the newest MacBook
-  Pros with the Apple Silicon M1 Pro/Max processors. Disregard these
-  instructions if you have an **Intel Mac**. If you still wish to complete the
-  guru point on these machines, it is possible if you **compile the latest
-  development version from the project's GitHub**. To do so, perform the
-  following instructions:
-
-  1. Ensure you have `clang` installed on your MacBook Pro. This is a C++
-  compiler comparable to `gcc` on Linux. You can check if you have it installed
-  by running `clang --version` inside of a terminal.
-
-  2. If it is not installed, then you must install `Xcode` from the **MacOS App
-  Store.** `Xcode` will not be needed for this project, but includes some
-  common development tools, including `clang`. `Xcode` is a large program; it
-  may take a while to install.
-
-  3. Clone the repository for `hashcat`, found at the following
-  [link](https://github.com/hashcat/hashcat).
-
-  4. `cd` into the `hashcat/` folder that was now created.
-
-  5. Run `make` to compile the program. This program is large, so give it some
-  time to compile. 
-
-  6. You should now see a `hashcat` executable file in this folder. You can run
-  the commands above, but replace `hashcat` with `./hashcat` to use the local
-  version in your current directory, and add `-D2` to use your MacBook's GPU.
-  Here is an example usage:
-
-          ./hashcat -a 3 -m 0 -1 '?l?d' -o passwords.7 -D2 --potfile-disable [PATH_TO_YOUR_HASHES.TXT] '?1?1?1?1?1?1?1'
-
-  </div>
-
-  <div class="alert alert-warning" markdown="1">
   #### <i class="fa fa-clock-o"></i> This Might Take A While
 
   Even though a [GPU] is basically a commodity supercomputer, cracking
