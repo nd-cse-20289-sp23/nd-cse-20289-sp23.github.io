@@ -189,6 +189,8 @@
         items:
           - name:       Slides 09
             link:       https://docs.google.com/presentation/d/19cnLbqorULsXbnv4Nc-hRQoE4OHe3kKURadqrkLwkwg/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=4178f094-811a-4759-b15b-afb8013cad1e
 
       - date:           Fri 03/03
         topics:         Functional Programming
