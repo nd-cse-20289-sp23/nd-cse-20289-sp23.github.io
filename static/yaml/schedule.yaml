@@ -243,6 +243,9 @@
 
       - date:           Fri 03/24
         topics:         Compiling and Building
+        items:
+          - name:       Slides 14
+            link:       https://docs.google.com/presentation/d/1ZZ-E2gUZdQo0CR1ZSgD8_iuTXUdKvK0SuNCtY8l5fQc/edit?usp=sharing
 
 - name:     "Unit 03: C"
 
@@ -251,6 +254,9 @@
       - date:           Mon 03/27
         topics:         Pointers, Arrays, Strings
         assignment:     Reading 09
+        items:
+          - name:       Slides 15
+            link:       https://docs.google.com/presentation/d/1T4JBckY9luChT0ARX0aJ2WRmFiTChmxsAokmMjPxz-E/edit?usp=sharing
 
       - date:           Wed 03/29
         topics:         Debugging (GDB, Valgrind)
