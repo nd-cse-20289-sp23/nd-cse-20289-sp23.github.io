@@ -244,7 +244,7 @@ body:       |
         https://twitter.com/DanWoikeSports/status/1627521703441211394
 
       # Show top 2 Clash Royale articles sorted by title
-      $ ./reddit.py -n 2 -o title btd6
+      $ ./reddit.py -n 2 -o title ClashRoyale
         1.	After effects of super magic archer challenge (Score: 39)
         https://i.redd.it/0b0gclkiqcja1.jpg
 
