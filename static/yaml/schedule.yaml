@@ -197,6 +197,8 @@
         items:
           - name:       Slides 10
             link:       https://docs.google.com/presentation/d/1chg0bHN4WepHUlbzlR1ZzKoxdVXupKVImgBUzKOUZoc/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=386f51b8-c2b7-4c2c-91e2-afba013ac30b
 
       - date:           Sat 03/04
         topics:         Reddit and CSE Demographics
