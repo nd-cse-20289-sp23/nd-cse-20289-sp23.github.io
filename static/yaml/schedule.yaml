@@ -212,6 +212,8 @@
         items:
           - name:       Slides 11
             link:       https://docs.google.com/presentation/d/1KZ_NMGtDna-GniaUPWPz6Z86GUSgvqsbEChm6s-uCJg/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=36672714-2592-4e60-86b9-afbd01388348
 
       - date:           Wed 03/08
         topics:         Parallel Computing
