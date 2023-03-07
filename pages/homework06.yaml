@@ -529,7 +529,7 @@ body:       |
   `CORES`: <br><br>
 
       :::bash
-      $ ./hulk.py -l 6 -c 2  # Use 2 processes
+      $ ./hulk.py -l 6 -c 8  # Use 8 processes
 
   To find out how many cores a Linux machine has, you can do:<br><br>
 
