@@ -220,6 +220,8 @@
         items:
           - name:       Slides 12
             link:       https://docs.google.com/presentation/d/1tbCwmkrNcCglPotjntMDkoubvoO3RzE2ZMqcOrHflOk/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=0ced0364-834a-4753-b341-afbf013c3618
 
       - date:           Fri 03/10
         topics:         Server-Side Programming
