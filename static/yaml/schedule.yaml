@@ -242,6 +242,8 @@
       - date:           Mon 03/20
         assignment:     Reading 08
         items:
+          - name:       Slides R2
+            link:       https://docs.google.com/presentation/d/1LmelRPhWrLK3d8Mgp1BS_q1oouo8xJffoJkBW_JSE6U/edit?usp=sharing
           - name:       Checklist 02
             link:       checklist02.html
 
@@ -338,7 +340,7 @@
         items:
           - name:       Checklist 03
 
-      - date:           Tue 05/03
+      - date:           Wed 05/03
         topics:         TBD
 
       - date:           Fri 05/12
