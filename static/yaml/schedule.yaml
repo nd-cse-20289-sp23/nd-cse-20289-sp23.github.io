@@ -270,9 +270,15 @@
 
       - date:           Wed 03/29
         topics:         Debugging (GDB, Valgrind)
+        items:
+          - name:       Slides 16
+            link:       https://docs.google.com/presentation/d/19GdKqJv-8LdBpxVSoIfXsnXJKuoWMXwfSl7CIWYH4hU/edit?usp=sharing
 
       - date:           Fri 03/31
         topics:         Memory Allocation
+        items:
+          - name:       Slides 17
+            link:       https://docs.google.com/presentation/d/1cNOHjP5PQl38C5-wzufaSN6NQIkSYW8_MwvGH1gYHEA/edit?usp=sharing
 
       - date:           Sat 04/01
         topics:         C-String Library
