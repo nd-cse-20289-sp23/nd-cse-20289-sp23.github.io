@@ -17,6 +17,8 @@
 - name:     Jean Francois Boueri Alvarez
   netid:    jboueri
   github:   jeanfboueri
+  conflicts:
+    - akaram
 
 - name:     Colton Kammes
   netid:    ckammes
@@ -33,6 +35,8 @@
 - name:     Christine Van Kirk
   netid:    cvankir2
   github:   cvankir2
+  conflicts:
+    - mvankir2
 
 - name:     Mia Manabat
   netid:    mmanabat

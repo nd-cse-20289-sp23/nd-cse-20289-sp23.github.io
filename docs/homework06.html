@@ -32,6 +32,8 @@
 		<div class="page-header">
 		    <ul class="nav nav-pills pull-right">
 			
+			<li><a href="index.html"><i class="fa fa-linux"></i> <span class="visible-md-inline visible-lg-inline">Home</span></a></li>
+			
 		    </ul>
 		    <h1><i class="fa fa-code"></i> Homework 06: Hulk Smash</h1>
 		</div>
@@ -465,7 +467,7 @@ a recent <a href="https://ndsmcobserver.com/2019/10/saint-marys-email-addresses-
 <h4 id="parallel-universe"><i class="fa fa-bolt"></i> Parallel Universe<a class="headerlink" href="#parallel-universe" title="Permanent link">&para;</a></h4>
 <p>To speed up your computations, consider using different values for
 <code>CORES</code>: <br><br></p>
-<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk.py -l <span style="color: #666666">6</span> -c <span style="color: #666666">2</span>  <span style="color: #3D7B7B; font-style: italic"># Use 2 processes</span>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./hulk.py -l <span style="color: #666666">6</span> -c <span style="color: #666666">8</span>  <span style="color: #3D7B7B; font-style: italic"># Use 8 processes</span>
 </code></pre></div>
 
 <p>To find out how many cores a Linux machine has, you can do:<br><br></p>
@@ -558,48 +560,6 @@ $ hashcat -a <span style="color: #666666">3</span> -m <span style="color: #66666
 <div class="alert alert-success">
 <p><strong>Note</strong>: for <strong>macOS</strong> users, you may wish to install <a href="https://hashcat.net/hashcat/">hashcat</a> via
 <a href="https://brew.sh/">Homebrew</a>.</p>
-</div>
-<div class="alert alert-warning">
-<h4 id="note-for-m1-promax-users"><i class="fa fa-apple"></i> Note for M1 Pro/Max Users:<a class="headerlink" href="#note-for-m1-promax-users" title="Permanent link">&para;</a></h4>
-<p>The current release of <code>hashcat</code> does not have support for the newest MacBook
-Pros with the Apple Silicon M1 Pro/Max processors. Disregard these
-instructions if you have an <strong>Intel Mac</strong>. If you still wish to complete the
-guru point on these machines, it is possible if you <strong>compile the latest
-development version from the project's GitHub</strong>. To do so, perform the
-following instructions:</p>
-<ol>
-<li>
-<p>Ensure you have <code>clang</code> installed on your MacBook Pro. This is a C++
-compiler comparable to <code>gcc</code> on Linux. You can check if you have it installed
-by running <code>clang --version</code> inside of a terminal.</p>
-</li>
-<li>
-<p>If it is not installed, then you must install <code>Xcode</code> from the <strong>MacOS App
-Store.</strong> <code>Xcode</code> will not be needed for this project, but includes some
-common development tools, including <code>clang</code>. <code>Xcode</code> is a large program; it
-may take a while to install.</p>
-</li>
-<li>
-<p>Clone the repository for <code>hashcat</code>, found at the following
-<a href="https://github.com/hashcat/hashcat">link</a>.</p>
-</li>
-<li>
-<p><code>cd</code> into the <code>hashcat/</code> folder that was now created.</p>
-</li>
-<li>
-<p>Run <code>make</code> to compile the program. This program is large, so give it some
-time to compile. </p>
-</li>
-<li>
-<p>You should now see a <code>hashcat</code> executable file in this folder. You can run
-the commands above, but replace <code>hashcat</code> with <code>./hashcat</code> to use the local
-version in your current directory, and add <code>-D2</code> to use your MacBook's GPU.
-Here is an example usage:</p>
-<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>./hashcat -a 3 -m 0 -1 &#39;?l?d&#39; -o passwords.7 -D2 --potfile-disable [PATH_TO_YOUR_HASHES.TXT] &#39;?1?1?1?1?1?1?1&#39;
-</code></pre></div>
-
-</li>
-</ol>
 </div>
 <div class="alert alert-warning">
 <h4 id="this-might-take-a-while"><i class="fa fa-clock-o"></i> This Might Take A While<a class="headerlink" href="#this-might-take-a-while" title="Permanent link">&para;</a></h4>
