@@ -244,6 +244,8 @@
         items:
           - name:       Slides R2
             link:       https://docs.google.com/presentation/d/1LmelRPhWrLK3d8Mgp1BS_q1oouo8xJffoJkBW_JSE6U/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=1bb6b928-78bc-47d3-bd59-afcb012ac931
           - name:       Checklist 02
             link:       checklist02.html
 
@@ -289,9 +291,15 @@
       - date:           Mon 04/03
         assignment:     Reading 10
         topics:         Structs, Unions
+        items:
+          - name:       Slides 18
+            link:       https://docs.google.com/presentation/d/1mxCSSU_PuxPS7joWwZdGBjpCIk6qHpg7xkR5QZgD7EA/edit?usp=sharing
 
       - date:           Wed 04/05
         topics:         Linked Data Structures
+        items:
+          - name:       Slides 19
+            link:       https://docs.google.com/presentation/d/1R_gll7KGT7WN9UNZbcR-JOlzT56zt_A1zznQGCuneh8/edit?usp=sharing
 
       - date:           Fri 04/07
         topics:         Easter
@@ -304,9 +312,15 @@
       - date:           Wed 04/12
         topics:         I/O
         assignment:     Reading 11
+        items:
+          - name:       Slides 20
+            link:       https://docs.google.com/presentation/d/103whnjGFTITMvXlVwNTq96RKJud3cF5CoTy0Gelgsuk/edit?usp=sharing
 
       - date:           Fri 04/14
         topics:         Files, Directories
+        items:
+          - name:       Slides 20
+            link:       https://docs.google.com/presentation/d/103whnjGFTITMvXlVwNTq96RKJud3cF5CoTy0Gelgsuk/edit?usp=sharing
 
       - date:           Sat 04/15
         topics:         Detecting Duplicates
@@ -317,24 +331,42 @@
       - date:           Mon 04/17
         topics:         TCP/IP, URLs, Sockets
         assignment:     Reading 12
+        items:
+          - name:       Slides 21
+            link:       https://docs.google.com/presentation/d/1KnhAvE-1Ng3AeCOrI_xG2BlRVT_KouxBkmrslBCfkmM/edit?usp=sharing
 
       - date:           Wed 04/19
         topics:         HTTP Client
+        items:
+          - name:       Slides 21
+            link:       https://docs.google.com/presentation/d/1KnhAvE-1Ng3AeCOrI_xG2BlRVT_KouxBkmrslBCfkmM/edit?usp=sharing
 
       - date:           Fri 04/21
         topics:         HTTP Server
+        items:
+          - name:       Slides 21
+            link:       https://docs.google.com/presentation/d/1KnhAvE-1Ng3AeCOrI_xG2BlRVT_KouxBkmrslBCfkmM/edit?usp=sharing
 
 - name:     "Processes"
   days:
       - date:           Mon 04/24
         topics:         Processes
         assignment:     Reading 13
+        items:
+          - name:       Slides 22
+            link:       https://docs.google.com/presentation/d/1glXaM_BZPAdQECBgi4N04W5SXYfCiWCW7hCniocH5Eo/edit?usp=sharing
 
       - date:           Wed 04/26
         topics:         Signals
+        items:
+          - name:       Slides 22
+            link:       https://docs.google.com/presentation/d/1glXaM_BZPAdQECBgi4N04W5SXYfCiWCW7hCniocH5Eo/edit?usp=sharing
 
       - date:           Fri 04/28
         topics:         VPS / Concurrent HTTP Server
+        items:
+          - name:       Slides 23
+            link:       https://docs.google.com/presentation/d/1UzCXr9CAlufrV4oR07ujQJ6JUc56OuM3k6_1-ifuKj0/edit?usp=sharing
 
       - date:           Sat 04/29
         topics:         "Thor's Hammer"
