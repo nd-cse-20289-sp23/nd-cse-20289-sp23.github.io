@@ -278,7 +278,9 @@ pointer arithmetic.
 <code>s.strip()</code> in <a href="https://www.python.org/">Python</a>).</p>
 </blockquote>
 <p><div class="alert alert-success" markdown="1">
-<strong>Hint</strong>: Use two <em>reader</em> and <em>writer</em> pointers to modify the string.
+<strong>Hint</strong>: Locate the <strong>head</strong> and <strong>tail</strong> of the string without the
+leading and trailing spaces, and then copy from <strong>head</strong> to the front
+of the string <code>s</code> until you reach the <strong>tail</strong>.
 </div></p>
 </li>
 <li>

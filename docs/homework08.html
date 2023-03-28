@@ -365,7 +365,27 @@ of bytes in any format you wish.
 specified by <code>path</code> and stores the result in <code>hexdigest</code>.</p>
 </blockquote>
 <p>To implement this function, you will need to use the <a href="https://www.openssl.org/docs/man3.0/man3/SHA1.html">SHA1 function</a> from
-the <a href="https://www.openssl.org/">OpenSSL</a> library.</p>
+the <a href="https://www.openssl.org/">OpenSSL</a> library using the following outline:</p>
+<ol>
+<li>
+<p>Use <a href="http://man7.org/linux/man-pages/man2/stat.2.html">stat</a> to get the size of the <strong>file</strong>.</p>
+</li>
+<li>
+<p>Use <a href="https://man7.org/linux/man-pages/man3/fopen.3.html">fopen</a> to open the <strong>file</strong> for reading.</p>
+</li>
+<li>
+<p>Use <a href="https://man7.org/linux/man-pages/man3/malloc.3.html">malloc</a> to allocate a <strong>buffer</strong> the size of the <strong>file</strong>.</p>
+</li>
+<li>
+<p>Use <a href="https://man7.org/linux/man-pages/man3/fread.3.html">fread</a> to read from the <strong>file</strong> into the <strong>buffer</strong> you allocated.</p>
+</li>
+<li>
+<p>Use the <a href="https://www.openssl.org/docs/man3.0/man3/SHA1.html">SHA1 function</a> to compute the <strong>raw digest</strong>.</p>
+</li>
+<li>
+<p>Convert the <strong>raw digest</strong> into the <strong>hexadecimal digest</strong>.</p>
+</li>
+</ol>
 <p><div class="alert alert-success" markdown="1">
 <strong>Note</strong>: You may adapt the code described in this
 <a href="https://stackoverflow.com/questions/918676/generate-sha-hash-in-c-using-openssl-library/919375#919375">StackOverflow question</a>.
