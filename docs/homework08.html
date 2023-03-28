@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<title>Homework 08: Memory Management, File System</title>
+
+	<!-- Bootstrap core CSS -->
+	<link href="static/css/blugold.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+	<style>
+	body {
+	    padding: 10px;
+	}
+	</style>
+    </head>
+    <body>
+	<div class="container">
+
+	    <div class="row">
+		<div class="page-header">
+		    <ul class="nav nav-pills pull-right">
+			
+		    </ul>
+		    <h1><i class="fa fa-code"></i> Homework 08: Memory Management, File System</h1>
+		</div>
+	    </div>
+
+            
+<p>The goal of this homework assignment is to allow you to practice managing
+<a href="https://en.wikipedia.org/wiki/C_dynamic_memory_allocation">dynamic memory</a> in <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> by building fundamental <a href="https://en.wikipedia.org/wiki/Data_structure">data structures</a> and
+navigating the <a href="https://en.wikipedia.org/wiki/File_system">file system</a> using low-level functions and <a href="https://en.wikipedia.org/wiki/System_call">system calls</a>.
+The first activity involves implementing a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> library, while the
+second activity requires you to use this library to build a <code>duplicates</code>
+utility that determines if there are any duplicate files by computing the
+<a href="https://en.wikipedia.org/wiki/Checksum">checksum</a> of each argument.</p>
+<p>For this assignment, record your source code and any responses to the
+following activities in the <code>homework08</code> folder of your <strong>assignments</strong>
+GitHub repository and push your work by <strong>noon, Saturday, April 15</strong>.</p>
+<h2 id="activity-0-preparation">Activity 0: Preparation<a class="headerlink" href="#activity-0-preparation" title="Permanent link">&para;</a></h2>
+<p>Before starting this homework assignment, you should first perform a <code>git pull</code>
+to retrieve any changes in your remote <a href="https://www.github.com">GitHub</a> repository:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ <span style="color: #008000">cd</span> path/to/repository                   <span style="color: #3D7B7B; font-style: italic"># Go to assignments repository</span>
+
+$ git checkout master                     <span style="color: #3D7B7B; font-style: italic"># Make sure we are in master branch</span>
+
+$ git pull --rebase                       <span style="color: #3D7B7B; font-style: italic"># Get any remote changes not present locally</span>
+</code></pre></div>
+
+<p>Next, create a new branch for this assignment:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ git checkout -b homework08              <span style="color: #3D7B7B; font-style: italic"># Create homework08 branch and check it out</span>
+</code></pre></div>
+
+<p>You are now ready to work on the activities below.</p>
+<div class="alert alert-info">
+<h4 id="frequently-asked-questions"><i class="fa fa-question"></i> Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h4>
+<div class="text-center">
+<iframe allowfullscreen="true" frameborder="0" height="389" mozallowfullscreen="true" src="https://docs.google.com/presentation/d/e/2PACX-1vRnQlk26xI9NVLyJnDj8vuLn4XIvNZdn55Bu4yNWbc1Ku1vwh1VdHu06MMBVtO_exkJaNZkImqYkNIs/embed?start=false&amp;loop=false&amp;delayms=3000" webkitallowfullscreen="true" width="480"></iframe>
+</div>
+</div>
+<h2 id="activity-1-table-library-8-points">Activity 1: Table Library (8 Points)<a class="headerlink" href="#activity-1-table-library-8-points" title="Permanent link">&para;</a></h2>
+<p>As discussed in your <strong>data structures</strong> class, a <a href="https://en.wikipedia.org/wiki/Associative_array">map</a> is a container that
+allows the user to associate <strong>keys</strong> to <strong>values</strong>.  This enables users to
+easily lookup values by a non-numeric key such as a string in an efficient
+manner.  Maps (aka <a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> in <a href="https://python.org/">Python</a>) are used in many applications and
+scripts.  For instance, whenever we used <a href="http://www.json.org/">JSON</a>, we were accessing a <a href="https://en.wikipedia.org/wiki/Associative_array">map</a>.</p>
+<p>Of course, being a <em>bare bones</em> language, <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> does not have a built-in <a href="https://en.wikipedia.org/wiki/Associative_array">map</a>
+in its <a href="https://en.wikipedia.org/wiki/C_standard_library">standard library</a>.  Because of this, we will build our own <a href="https://en.wikipedia.org/wiki/Associative_array">map</a>
+container by implementing a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> using the <a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining">separate chaining</a>
+technique to manage <a href="https://en.wikipedia.org/wiki/Collision_(computer_science)#In_theoretical_computer_science">collisions</a>.</p>
+<h4 id="separate-chaining-hash-table">Separate Chaining Hash Table<a class="headerlink" href="#separate-chaining-hash-table" title="Permanent link">&para;</a></h4>
+<p>Fundamentally, a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> is just an <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">array</a>.  Normal <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">arrays</a> in <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a>,
+unfortunately, can only be indexed by an <a href="https://en.wikipedia.org/wiki/Integer_(computer_science)">integer</a>.  As we discussed last
+week, this is due to the fact that the <strong>name<em> of an <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">array</a> is really just a
+</em>label* for the base </strong>address<strong> of a contiguous chunk of memory.  Therefore,
+an </strong>index** operation is equivalent to the following:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>A[i]<span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span><span style="color: #666666">*</span>(A<span style="color: #bbbbbb"> </span><span style="color: #666666">+</span><span style="color: #bbbbbb"> </span>i)<span style="color: #bbbbbb"> </span><span style="color: #3D7B7B; font-style: italic">// Index i of a is the same as access the location in memory at A + i</span>
+</code></pre></div>
+
+<p>This is fine if we only need to search our elements by <a href="https://en.wikipedia.org/wiki/Integer_(computer_science)">integer</a> values,
+since we can use the <a href="https://en.wikipedia.org/wiki/Integer_(computer_science)">integer</a> value as an offset into our chunk of memory.
+However, if we wanted to quickly lookup values by <a href="https://en.wikipedia.org/wiki/C_string_handling">strings</a> or <a href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">doubles</a>, we
+would instead have to scan linearly through our <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">array</a> to find the
+appropriate element.  This, of course, is inefficient, so we need another way
+of storing non-<a href="https://en.wikipedia.org/wiki/Integer_(computer_science)">integer</a> values in a way that allows us to quickly find them
+again.</p>
+<p>To work around this limitation in <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">arrays</a>, we can use a <a href="https://en.wikipedia.org/wiki/Hash_function">hash function</a> such
+as <a href="https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a</a> to deterministicly compute an <a href="https://en.wikipedia.org/wiki/Integer_(computer_science)">integer</a> value for any sequence of
+binary data:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>FNV-1A-Hash(data) -&gt; Integer
+</code></pre></div>
+
+<p>Therefore, using a <a href="https://en.wikipedia.org/wiki/Hash_function">hash function</a> allows us to utilize non-<a href="https://en.wikipedia.org/wiki/Integer_(computer_science)">integer</a> values
+such as <a href="https://en.wikipedia.org/wiki/C_string_handling">strings</a> or <a href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">doubles</a> to lookup elements in a normal <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">array</a>.  The
+use of a <a href="https://en.wikipedia.org/wiki/Hash_function">hash function</a> in this manner is the core concept behind the <a href="https://en.wikipedia.org/wiki/Data_structure">data
+structure</a> know as a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a>, which can be used to implement either the
+<a href="https://en.wikipedia.org/wiki/Set_(abstract_data_type)">set</a> or <a href="https://en.wikipedia.org/wiki/Associative_array">map</a> <strong>abstract data types</strong>.</p>
+<p>For this activity, you will be implementing a <a href="https://en.wikipedia.org/wiki/Associative_array">map</a> based on a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a>
+that uses <a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining">separate chaining</a> to handle <a href="https://en.wikipedia.org/wiki/Collision_(computer_science)#In_theoretical_computer_science">collisions</a> as shown below:</p>
+<div class="thumbnail">
+  <img src="static/img/homework08_ht_sc.png" class="img-responsive">
+</div>
+
+<p>In this design, the <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> starts with a structure that contains the
+following fields:</p>
+<ol>
+<li>
+<p><strong>Buckets</strong>: This is the <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">array</a> of <strong>Pairs</strong>, each of which consists of a
+<strong>key</strong>, a <strong>value</strong>, and a reference to the <strong>next</strong> <strong>Pair</strong> in the chain.</p>
+</li>
+<li>
+<p><strong>Capacity</strong>: This is the size of the <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">array</a> of <strong>Pairs</strong> (ie. number of
+<strong>Buckets</strong>).</p>
+</li>
+<li>
+<p><strong>Size</strong>: This is the number of valid <strong>Pair</strong> we are storing in our
+<a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a>.</p>
+</li>
+</ol>
+<p>In the example in the diagram above, we have a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> with an <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">array</a>
+of <code>8</code> <strong>Buckets</strong>.  Each <strong>Bucket</strong> is actually a <a href="https://en.wikipedia.org/wiki/Linked_list#Singly_linked_list">singly-linked list</a> where
+we store the <strong>Pairs</strong> in our <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a>.  Because the <strong>Bucket</strong> is an
+actual <strong>Pair</strong> and not just a reference to one, this means that our
+<a href="https://en.wikipedia.org/wiki/Linked_list#Singly_linked_list">singly-linked list</a> uses a <a href="https://en.wikipedia.org/wiki/Linked_list#Using_sentinel_nodes">dummy or sentinel node</a>.</p>
+<p>For instance, the first <strong>Pair</strong>  at the top has a <strong>key</strong> of <code>0</code> and a
+<strong>value</strong> of "Dog".  Because <code>0</code> maps to <strong>Bucket</strong> <code>0</code> we simply have the
+<strong>Pair</strong> structure at <strong>Buckets[0]</strong> reference this <strong>Pair</strong>.  Because
+there are no other <strong>Pairs</strong> that map to <code>0</code>, this top <strong>Pair</strong>'s next
+reference is simply <code>NULL</code>.</p>
+<p>At the bottom, we have two <strong>Pairs</strong> that map to <strong>Bucket</strong> <code>5</code>.  When
+multiple elements map to the same <strong>Bucket</strong>, we call this a <a href="https://en.wikipedia.org/wiki/Collision_(computer_science)#In_theoretical_computer_science">collision</a>.  In
+<a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining">separate chaining</a>, we handle this situation by simply adding the additional
+<strong>Pair</strong> to our <a href="https://en.wikipedia.org/wiki/Linked_list#Singly_linked_list">singly-linked list</a> as shown in the diagram.  Here, we have
+one <strong>Pair</strong> with the <strong>key</strong> <code>5</code> and the <strong>value</strong> "Log" followed by a
+second <strong>Pair</strong> with the <strong>key</strong> <code>13</code> and the <strong>value</strong> "Rock".  The former
+has a reference to the latter to form a <a href="https://en.wikipedia.org/wiki/Linked_list#Singly_linked_list">singly-linked list</a>.</p>
+<p>The remainder of this document details how you are to build a <a href="https://en.wikipedia.org/wiki/Associative_array">map</a> that
+follows this overall design.</p>
+<h4 id="skeleton-code">Skeleton Code<a class="headerlink" href="#skeleton-code" title="Permanent link">&para;</a></h4>
+<p>To help you get started, the instructor has provided you with the following <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework08/homework08.tar.gz">skeleton code</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Go to assignments repository</span>
+$ <span style="color: #008000">cd</span> path/to/assignments/repository
+
+<span style="color: #3D7B7B; font-style: italic"># ------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># MAKE SURE YOU ARE NOT INSIDE homework08</span>
+<span style="color: #3D7B7B; font-style: italic"># ------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># MAKE SURE YOU ARE AT THE TOP-LEVEL DIRECTORY</span>
+<span style="color: #3D7B7B; font-style: italic"># ------------------------------------------------</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Download skeleton code tarball</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework08/homework08.tar.gz
+
+<span style="color: #3D7B7B; font-style: italic"># Extract skeleton code tarball</span>
+$ tar xzvf homework08.tar.gz
+</code></pre></div>
+
+<p>Once downloaded and extracted, you should see the following files in your
+<code>homework08</code> directory:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>homework08
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> Makefile               <span style="color: #3D7B7B; font-style: italic"># This is the Makefile for building all the project artifacts</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> README.md              <span style="color: #3D7B7B; font-style: italic"># This is the README file for recording your responses</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> bin                    <span style="color: #3D7B7B; font-style: italic"># This contains the binary executables and test scripts</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_duplicates.sh   <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the duplicates tool</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_hash.sh         <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the hash functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_pair.sh         <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the Pair structure</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_table.sh        <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the Table structure</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> include                <span style="color: #3D7B7B; font-style: italic"># This contains the header files</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> hash.h               <span style="color: #3D7B7B; font-style: italic"># This is the C header file for hash functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> macros.h             <span style="color: #3D7B7B; font-style: italic"># This is the C header file for macros</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> pair.h               <span style="color: #3D7B7B; font-style: italic"># This is the C header file for Pair structure</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> table.h              <span style="color: #3D7B7B; font-style: italic"># This is the C header file for Table structure</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> lib                    <span style="color: #3D7B7B; font-style: italic"># This contains the library files</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> src                    <span style="color: #3D7B7B; font-style: italic"># This contains the C implementation files</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> duplicates.c         <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the duplicates tool</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> pair.c               <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the Pair structure</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> hash.c               <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the hash functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> table.c              <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the Table structure</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> tests                  <span style="color: #3D7B7B; font-style: italic"># This contains the unit test C implementation files</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> unit_hash.c          <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the hash unit test</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> unit_pair.c          <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the Pair unit test</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> unit_table.c         <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the Table unit test</span>
+</code></pre></div>
+
+<p>The details on what you need to implement are described in the following
+sections.</p>
+<h3 id="task-0-headers">Task 0: Headers<a class="headerlink" href="#task-0-headers" title="Permanent link">&para;</a></h3>
+<p>The following is a description of the <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> files included in the
+<a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework08/homework08.tar.gz">skeleton code</a>.</p>
+<h4 id="includepairh"><code>include/pair.h</code><a class="headerlink" href="#includepairh" title="Permanent link">&para;</a></h4>
+<p>The <code>include/pair.h</code> file is the <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> file for <code>Pair</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>.  In
+addition to the function prototypes, this <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> defines the following
+types:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">typedef</span><span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">union</span><span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #B00040">int64_t</span><span style="color: #bbbbbb">  </span>number;<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #B00040">char</span><span style="color: #bbbbbb">    </span><span style="color: #666666">*</span>string;<span style="color: #bbbbbb"></span>
+}<span style="color: #bbbbbb"> </span>Value;<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>This defines a <code>Value</code> <a href="https://en.wikipedia.org/wiki/Union_type">union</a> type consisting of either a <code>64</code>-bit <a href="https://en.wikipedia.org/wiki/Integer_(computer_science)">integer</a>
+or a <a href="https://en.wikipedia.org/wiki/C_string_handling">string</a>.</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">typedef</span><span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">enum</span><span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>NUMBER,<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>STRING,<span style="color: #bbbbbb"></span>
+}<span style="color: #bbbbbb"> </span>Type;<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>This defines an <a href="http://en.cppreference.com/w/c/language/enum">enumeration</a> that defines the constants <code>NUMBER</code> and <code>STRING</code>.</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">typedef</span><span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">struct</span><span style="color: #bbbbbb"> </span><span style="color: #0000FF; font-weight: bold">Pair</span><span style="color: #bbbbbb"> </span>Pair;<span style="color: #bbbbbb"></span>
+<span style="color: #008000; font-weight: bold">struct</span><span style="color: #bbbbbb"> </span><span style="color: #0000FF; font-weight: bold">Pair</span><span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #B00040">char</span><span style="color: #bbbbbb">   </span><span style="color: #666666">*</span>key;<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>Value<span style="color: #bbbbbb">   </span>value;<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>Type<span style="color: #bbbbbb">    </span>type;<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>Pair<span style="color: #bbbbbb">   </span><span style="color: #666666">*</span>next;<span style="color: #bbbbbb"></span>
+};<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>This defines a <code>Pair</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>, which follows from our design described
+above.  In addition to having a <code>key</code>, <code>value</code>, and <code>next</code> reference, the
+<code>Pair</code> also records the <code>type</code> of its <code>value</code> (ie. <code>NUMBER</code> or <code>STRING</code>).
+This will be useful in choosing between the <code>number</code> and <code>string</code> fields of
+the <code>value</code> <a href="https://en.wikipedia.org/wiki/Union_type">union</a>.</p>
+<h4 id="includetableh"><code>include/table.h</code><a class="headerlink" href="#includetableh" title="Permanent link">&para;</a></h4>
+<p>The <code>include/table.h</code> file is the <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> file for <code>Table</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>.  In
+addition to the function prototypes, this <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> defines the following
+types:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">typedef</span><span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">struct</span><span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>Pair<span style="color: #bbbbbb">    </span><span style="color: #666666">*</span>buckets;<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #B00040">size_t</span><span style="color: #bbbbbb">   </span>capacity;<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #B00040">size_t</span><span style="color: #bbbbbb">   </span>size;<span style="color: #bbbbbb"></span>
+}<span style="color: #bbbbbb"> </span>Table;<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>This defines the <code>Table</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>, which follows from our design described
+above.</p>
+<div class="alert alert-info">
+<h4 id="type-definitions"><i class="fa fa-code"></i> Type Definitions<a class="headerlink" href="#type-definitions" title="Permanent link">&para;</a></h4>
+<p>The use of <code>typedef</code> in this <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> file allow us to simply say <code>Table *t</code>
+rather than <code>struct Table *t</code>.  While there is some
+<a href="https://google.github.io/styleguide/cppguide.html#Aliases">controversy</a>
+over whether or not this is good practice, we will use these <a href="https://en.wikipedia.org/wiki/Typedef">type
+definitions</a> to make our code clearer and more compact.</p>
+</div>
+<h4 id="includemacrosh"><code>include/macros.h</code><a class="headerlink" href="#includemacrosh" title="Permanent link">&para;</a></h4>
+<p>Finally, the <code>include/macros.h</code> <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> file provides a <code>debug</code> <a href="https://en.wikipedia.org/wiki/C_preprocessor#Macro_definition_and_expansion">macro</a> that
+you can use to insert debugging statements into your code (rather than
+<a href="https://man7.org/linux/man-pages/man3/printf.3.html">printf</a>):</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>debug(<span style="color: #BA2121">&quot;foo = %d&quot;</span>,<span style="color: #bbbbbb"> </span>foo);<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>The advantage of using this <a href="https://en.wikipedia.org/wiki/C_preprocessor#Macro_definition_and_expansion">macro</a> is that it displays the file name, line
+number, and function name where the command is called in its output, along
+with the formatted message you specified.</p>
+<p>Likewise, the <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> file also provides a <code>streq</code> <a href="https://en.wikipedia.org/wiki/C_preprocessor#Macro_definition_and_expansion">macro</a> that you can use
+instead of <a href="http://man7.org/linux/man-pages/man3/strcmp.3.html">strcmp</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">if</span><span style="color: #bbbbbb"> </span>(streq(source,<span style="color: #bbbbbb"> </span>target))<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>...<span style="color: #bbbbbb"></span>
+}<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>For this task, you do not need to modify these <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> files. Instead, you
+should review them and ensure you understand the provided code.</p>
+<h3 id="task-1-makefile">Task 1: <code>Makefile</code><a class="headerlink" href="#task-1-makefile" title="Permanent link">&para;</a></h3>
+<p>Once again, the <code>Makefile</code> contains all the rules or recipes for building the
+project artifacts (e.g. <code>libtable.a</code>, <code>duplicates</code>, etc.).  Although the
+provided <code>Makefile</code> contains most of the variable definitions and <code>test</code>
+recipes, you must add the appropriate rules for <code>libtable.a</code>, <code>unit_hash</code>,
+<code>unit_pair</code>, <code>unit_table</code>, <code>duplicates</code>, and any intermediate objects.  The
+dependencies for these targets are shown in the <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</a> below:</p>
+<div class="thumbnail">
+  <img src="static/img/homework08_makefile.png" class="img-responsive">
+</div>
+
+<div class="alert alert-info">
+<h4 id="makefile-variables"><i class="fa fa-cogs"></i> Makefile Variables<a class="headerlink" href="#makefile-variables" title="Permanent link">&para;</a></h4>
+<p>You <strong>must</strong> use the <code>CC</code>, <code>CFLAGS</code>, <code>LD</code>, <code>LDFLAGS</code>, <code>AR</code>, and <code>ARFLAGS</code>
+variables when appropriate in your <a href="https://www.gnu.org/software/make/manual/html_node/Rules.html">rules</a>.</p>
+<ul>
+<li>
+<p><strong>Note</strong>: Although we are producing a <a href="https://en.wikipedia.org/wiki/Static_library#Creating_static_libraries_in_C.2FC.2B.2B">static library</a> in the form of
+    <code>libtable.a</code>, we will <strong>not</strong> be statically linking our executables.
+    Instead, we will use the <code>libtable.a</code> as another <a href="https://en.wikipedia.org/wiki/Object_file">object</a> file when we
+    <strong>link</strong> our executables.</p>
+</li>
+<li>
+<p><strong>Note</strong>: The binary executables must go in the <code>bin</code> folder.</p>
+</li>
+</ul>
+</div>
+<p>Once you have a working <code>Makefile</code>, you should be able to run the following
+commands:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Build all TARGETS</span>
+$ make
+Compiling src/duplicates.o...
+Compiling src/hash.o...
+Compiling src/pair.o...
+Compiling src/table.o...
+Linking lib/libtable.a...
+Linking bin/duplicates...
+
+<span style="color: #3D7B7B; font-style: italic"># Run all tests</span>
+$ make <span style="color: #008000">test</span>
+Compiling tests/unit_hash.o...
+Linking bin/unit_hash...
+Testing hash...
+...
+
+<span style="color: #3D7B7B; font-style: italic"># Simulate build with tracing output</span>
+$ make -n
+<span style="color: #008000">echo</span> Compiling src/duplicates.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/duplicates.o src/duplicates.c
+<span style="color: #008000">echo</span> Compiling src/hash.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/hash.o src/hash.c
+<span style="color: #008000">echo</span> Compiling src/pair.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/pair.o src/pair.c
+<span style="color: #008000">echo</span> Compiling src/table.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/table.o src/table.c
+<span style="color: #008000">echo</span> Linking lib/libtable.a...
+ar rcs lib/libtable.a src/hash.o src/pair.o src/table.o
+<span style="color: #008000">echo</span> Linking bin/duplicates...
+gcc -Llib -o bin/duplicates src/duplicates.o lib/libtable.a -lcrypto
+</code></pre></div>
+
+<p>Depending on your compiler, you may see some warnings with the initial
+<a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework08/homework08.tar.gz">skeleton code</a>.  Likewise, the test programs will all fail in some fashion.</p>
+<h3 id="task-2-srchashc">Task 2: <code>src/hash.c</code><a class="headerlink" href="#task-2-srchashc" title="Permanent link">&para;</a></h3>
+<p>The <code>src/hash.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation for the <a href="https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a</a> hash
+function and the <a href="https://en.wikipedia.org/wiki/SHA1">SHA1</a> checksum function. For this task, you will need to
+implement the following functions:</p>
+<ol>
+<li>
+<p><code>uint64_t      hash_from_data(const void *data, size_t n)</code></p>
+<blockquote>
+<p>This function uses the <a href="https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a</a> algorithm to compute a <a href="https://en.wikipedia.org/wiki/Hash_function#Hash_tables">hash</a> on the
+given <code>data</code> which consists of <code>n</code> bytes.</p>
+</blockquote>
+<p>To implement this function, you may follow the pseudo-code below:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>function FNV-Hash(data):
+    hash = FNV_OFFSET_BASIS
+    for each byte in data:
+        hash = hash ^ byte of data
+        hash = hash x FNV_PRIME
+    return hash
+</code></pre></div>
+
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>: Remember that you can use <a href="http://beej.us/guide/bgc/output/html/multipage/morestuff.html#cast">type casting</a> to interpret a chunk
+of bytes in any format you wish.
+</div></p>
+</li>
+<li>
+<p><code>bool        hash_from_file(const char *path, char hexdigest[HEX_DIGEST_LENGTH])</code></p>
+<blockquote>
+<p>This function computes the <a href="https://en.wikipedia.org/wiki/SHA1">SHA1</a> checksum on the contents of the file
+specified by <code>path</code> and stores the result in <code>hexdigest</code>.</p>
+</blockquote>
+<p>To implement this function, you will need to use the <a href="https://www.openssl.org/docs/man3.0/man3/SHA1.html">SHA1 function</a> from
+the <a href="https://www.openssl.org/">OpenSSL</a> library.</p>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>: You may adapt the code described in this
+<a href="https://stackoverflow.com/questions/918676/generate-sha-hash-in-c-using-openssl-library/919375#919375">StackOverflow question</a>.
+</div></p>
+</li>
+</ol>
+<p>As you implement <code>src/hash.c</code>, you can test it by running the <code>test-hash</code>
+target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-hash target</span>
+$ make test-hash
+Compiling tests/unit_hash.o...
+Compiling src/hash.o...
+Compiling src/pair.o...
+Compiling src/table.o...
+Linking lib/libtable.a...
+Linking bin/unit_hash...
+Testing hash...
+ hash_from_data                           ... Success
+ hash_from_file                           ... Success
+
+   Score <span style="color: #666666">1</span>.00 / <span style="color: #666666">1</span>.00
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run unit_hash manually</span>
+$ ./bin/unit_hash <span style="color: #666666">0</span>
+    wake me up <span style="color: #19177C">inside</span> <span style="color: #666666">=</span> 0x7d9454fa584a0a56
+                  <span style="color: #19177C">123</span> <span style="color: #666666">=</span> 0x456fc2181822c4db
+              <span style="color: #19177C">deadool</span> <span style="color: #666666">=</span> 0x7d517630945dadbb
+            <span style="color: #19177C">wolverine</span> <span style="color: #666666">=</span> 0x874d0d8868f684c8
+
+$ ./bin/unit_hash <span style="color: #666666">1</span>
+       include/hash.h <span style="color: #666666">=</span> 51412c4cad9a949c956484648eeae8c30409f665
+     include/macros.h <span style="color: #666666">=</span> 0499bbe2cce1cfcc545a9300c0d9a2a0b64d10c0
+       include/pair.h <span style="color: #666666">=</span> 86dd8a78225719fcfc9ca3a2eed7de01f4e266b4
+      include/table.h <span style="color: #666666">=</span> cd2c2a28104f73d5ff3553e4b35ba514a53f637e
+</code></pre></div>
+
+<h3 id="task-3-srcpairc">Task 3: <code>src/pair.c</code><a class="headerlink" href="#task-3-srcpairc" title="Permanent link">&para;</a></h3>
+<p>The <code>src/pair.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation for the <strong>Pair
+structure</strong>.  For this task, you will need to implement the following
+functions:</p>
+<ol>
+<li>
+<p><code>Pair *       pair_create(const char *key, const Value value, Pair *next, Type type)</code></p>
+<blockquote>
+<p>This function allocates a new <code>Pair</code>, sets its <code>key</code>, <code>value</code>,
+  <code>next</code> and <code>type</code> fields, and returns the allocated structure.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+  <strong>Note</strong>:</p>
+<ul>
+<li>
+<p>You must check if allocation fails.</p>
+</li>
+<li>
+<p>You must allocate and copy the <code>key</code> (consider <a href="http://man7.org/linux/man-pages/man3/strdup.3.html">strdup</a>).</p>
+</li>
+<li>
+<p>You must allocate and copy the <code>value</code> if the <code>type</code> is set to <code>STRING</code>.</p>
+</li>
+<li>
+<p>You may wish to use the <code>pair_update</code> function to implement part of
+    this function (to avoid <em>code duplication</em>).
+  </div></p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>Pair *       pair_delete(Pair *p, bool recursive)</code></p>
+<blockquote>
+<p>This function deallocates the given <code>Pair</code> and any previously
+  allocated fields such as the <code>key</code> and <code>value</code>.  If <code>recursive</code> is
+  <code>true</code>, then this function will also deallocate the <code>next</code> <code>Pair</code> and
+  any of its successors.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+  <strong>Note</strong>: You can use <a href="https://en.wikipedia.org/wiki/Recursion">recursion</a> for this if you wish since the
+  <a href="https://en.wikipedia.org/wiki/Linked_list#Singly_linked_list">singly-linked list</a> should never be too long.
+  </div></p>
+</li>
+<li>
+<p><code>void          pair_update(Pair *p, const Value value, Type type)</code></p>
+<blockquote>
+<p>This function updates the <code>value</code> field of the specified <code>Pair</code>.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+  <strong>Note</strong>: Special care must be given to both the old <code>value</code> <code>type</code> and the
+  new <code>value</code> <code>type</code>.</p>
+<ul>
+<li>
+<p>If the old <code>value</code> is of <code>type</code> <code>STRING</code>, then you must deallocate it.</p>
+</li>
+<li>
+<p>If the new <code>value</code> is of <code>type</code> <code>STRING</code>, then you must allocate and copy it.</p>
+</li>
+</ul>
+<p>Failure to do so will lead to memory errors.
+  </div></p>
+</li>
+<li>
+<p><code>void          pair_format(Pair *p, FILE *stream)</code></p>
+<blockquote>
+<p>This function prints the <code>Pair</code>'s <code>key</code> and <code>value</code> fields to the
+  specified <code>stream</code> in the format "{key}\t{value}\n".</p>
+</blockquote>
+</li>
+</ol>
+<p>As you implement <code>src/pair.c</code>, you can test it by running the <code>test-pair</code>
+target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-pair target</span>
+$ make test-pair
+Compiling tests/unit_pair.o...
+Linking bin/unit_pair...
+Testing pair...
+ pair_create                              ... Success
+ pair_delete                              ... Success
+ pair_update                              ... Success
+ pair_format                              ... Success
+
+   Score <span style="color: #666666">2</span>.00 / <span style="color: #666666">2</span>.00
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run unit_pair manually</span>
+$ ./bin/unit_pair <span style="color: #666666">0</span>
+</code></pre></div>
+
+<h3 id="task-4-srctablec">Task 4: <code>src/table.c</code><a class="headerlink" href="#task-4-srctablec" title="Permanent link">&para;</a></h3>
+<p>The <code>src/table.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation for the core <a href="https://en.wikipedia.org/wiki/Hash_table">hash
+table</a> data structure. For this task, you will need to implement the
+following functions:</p>
+<ol>
+<li>
+<p><code>Table *         table_create(size_t capacity)</code></p>
+<blockquote>
+<p>This function allocates a new <code>Table</code>, sets its <code>capacity</code>, and <code>size</code>
+fields, allocates <code>buckets</code> of <code>Pair</code> structures, and returns the
+allocated structure.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>If <code>capacity</code> is <code>0</code>, then it should use the <code>DEFAULT_CAPACITY</code> instead.</p>
+</li>
+<li>
+<p>The <code>buckets</code> field is an <a href="https://en.wikipedia.org/wiki/C_(programming_language)#Arrays">array</a> of <code>Pair</code> structures.
+</div></p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>Table *         table_delete(Table *t)</code></p>
+<blockquote>
+<p>This function deallocates the given <code>Table</code> along with its <code>buckets</code> of
+<code>Pair</code> structures.</p>
+</blockquote>
+<div class="alert alert-success" markdown="1">
+<p><strong>Note</strong>: Consider using the <code>recursive</code> argument to <code>pair_delete</code>.</p>
+</div>
+</li>
+<li>
+<p><code>void          table_insert(Table *t, const char *key, const Value value, Type type)</code></p>
+<blockquote>
+<p>This function inserts a new <code>Pair</code> into the <code>Table</code> if the <code>key</code> does
+not exist yet.  If it does, then pre-existing <code>Pair</code>'s <code>value</code> is
+updated to the given <code>value</code>.</p>
+</blockquote>
+<div class="alert alert-success" markdown="1">
+<p><strong>Note</strong>: It doesn't matter where you insert the <code>Pair</code> in the
+corresponding <a href="https://en.wikipedia.org/wiki/Linked_list#Singly_linked_list">singly-linked list</a>.  That is, you can either add to the
+<em>front</em> or the <em>back</em>, it is up to you.</p>
+</div>
+</li>
+<li>
+<p><code>Value *       table_search(Table *t, const char *key)</code></p>
+<blockquote>
+<p>This function searches the <code>Table</code> for an <code>Pair</code> with the given <code>key</code>.
+If found then a reference to the corresponding <code>Value</code> is returned,
+otherwise <code>NULL.</code></p>
+</blockquote>
+<p><div class="thumbnail">
+<img src="static/img/homework08_ht_search.png" class="img-responsive">
+</div></p>
+</li>
+<li>
+<p><code>bool          table_remove(Table *t, const char *key)</code></p>
+<blockquote>
+<p>This function removes the <code>Pair</code> with the given <code>key</code> from the <code>Table</code>
+and returns whether or not the removal was successful (ie. an <code>Pair</code>
+with the <code>key</code> was in fact in the <code>Table</code>).</p>
+</blockquote>
+<p><div class="thumbnail">
+<img src="static/img/homework08_ht_remove.png" class="img-responsive">
+</div></p>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>: Special care must be given to <em>bridge</em> the gap between the
+previous <code>Pair</code> and the next <code>Pair</code> during removal.
+</div></p>
+</li>
+<li>
+<p><code>void          table_format(Table *t, FILE *stream)</code></p>
+<blockquote>
+<p>This function formats all the <code>Pairs</code> in the <code>Table</code> to the specified
+<code>stream</code>.</p>
+</blockquote>
+</li>
+</ol>
+<p>As you implement <code>src/table.c</code>, you can test it by running the <code>test-table</code>
+target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-table target</span>
+$ make test-table
+Compiling tests/unit_table.o...
+Linking bin/unit_table...
+Testing table...
+ table_create                             ... Success
+ table_delete                             ... Success
+ table_insert                             ... Success
+ table_search                             ... Success
+ table_remove                             ... Success
+ table_format                             ... Success
+
+   Score <span style="color: #666666">5</span>.00 / <span style="color: #666666">5</span>.00
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run unit_table manually</span>
+$ ./bin/unit_table <span style="color: #666666">0</span>
+</code></pre></div>
+
+<h2 id="activity-2-duplicates-6-points">Activity 2: Duplicates (6 Points)<a class="headerlink" href="#activity-2-duplicates-6-points" title="Permanent link">&para;</a></h2>
+<p>Once you have a working <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> library, you are to complete the
+<code>src/duplicates.c</code> program:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Display usage</span>
+$ ./bin/duplicates -h
+Usage: ./bin/duplicates paths...
+    -c     Only display total number of duplicates
+    -q     Do not write anything <span style="color: #666666">(</span><span style="color: #008000">exit</span> with <span style="color: #666666">0</span> <span style="color: #008000; font-weight: bold">if</span> duplicate found<span style="color: #666666">)</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Check files and directories for duplicates</span>
+$ cp README.md COPY.md
+
+$ ./bin/duplicates README.md Makefile bin COPY.md
+COPY.md is duplicate of README.md
+
+<span style="color: #3D7B7B; font-style: italic"># Check files and directories for duplicates (counts only)</span>
+$ ./bin/duplicates -c README.md Makefile bin COPY.md
+<span style="color: #666666">1</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Check files and directories for duplicates (quiet)</span>
+$ ./bin/duplicates -q README.md Makefile bin COPY.md
+
+$ <span style="color: #008000">echo</span> <span style="color: #19177C">$?</span>
+<span style="color: #666666">0</span>
+</code></pre></div>
+
+<p>The <code>bin/duplicates</code> program proceses the files and directories passed to the
+program as arguments.  It computes the <a href="https://en.wikipedia.org/wiki/SHA1">SHA1</a> checksum of each file and stores
+it in a <code>Table</code> structure in order to keep track if it has seen the contents
+of each file before.</p>
+<p>If a duplicate is found, then a message is displayed informing the user of
+the found duplicate (and the original file).</p>
+<p>If the <code>-c</code> flag is set, then only a final count of the total number of
+duplicates found is reported to the user.</p>
+<p>If the <code>-q</code> flag is set, then the program exits with <code>0</code> as soon as it
+detects a duplicate, otherwise, it exits with a non-zero value.</p>
+<h3 id="task-1-srcduplicatesc">Task 1: <code>src/duplicates.c</code><a class="headerlink" href="#task-1-srcduplicatesc" title="Permanent link">&para;</a></h3>
+<p>The <code>src/duplicates.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation of the duplicates
+tool described above.</p>
+<p>In addition to implementing command line parsing in the <code>main</code> function and you
+will need to implement the following functions:</p>
+<ol>
+<li>
+<p><code>bool is_directory(const char *path)</code></p>
+<blockquote>
+<p>This function returns <code>true</code> if <code>path</code> is a directory, otherwise it returns <code>false</code>.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>: Consider using the <a href="http://man7.org/linux/man-pages/man2/stat.2.html">stat</a> system call.
+</div></p>
+</li>
+<li>
+<p><code>size_t check_file(const char *path, Table *checksums, Options *options)</code></p>
+<blockquote>
+<p>This function checks if the <a href="https://en.wikipedia.org/wiki/SHA1">SHA1</a> checksum of the contents in the file
+specified by <code>path</code> is in the <code>checksums</code> <code>Table</code>.  If so, it will return
+<code>1</code>.  Otherwise, it will return <code>0</code>.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>If <code>quiet</code> is <code>true</code>, then <code>exit</code> if file is in <code>checksums</code> <code>Table</code>.</p>
+</li>
+<li>
+<p>If <code>count</code> is <code>false</code>, then print duplicate association if file is in <code>checksums</code> <code>Table</code>.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>size_t check_directory(const char *root, Table *checksums, Options *options)</code></p>
+<blockquote>
+<p>This function determines how many duplicates are in contained in the
+<code>root</code> directory by traversing all the entries.  If the entry is a
+directory, then it recursively calls itself on the entry.  Otherwise, it
+calls <code>check_file</code> on the entry.  At the end, it should return the total
+numer of duplicates that was found while traversing the directory.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>You should skip "." and "..".</p>
+</li>
+<li>
+<p>You should use the <strong>full path</strong> of the <code>entry</code> when recursing.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+<p>As you implement <code>src/duplicates.c</code>, you can test it by running the <code>test-duplicates</code>
+target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-duplicates target</span>
+$ make test-duplicates
+Compiling src/duplicates.o...
+Linking bin/duplicates...
+Testing duplicates...
+ duplicates -h                            ... Success
+ duplicates none                          ... Success
+ duplicates none <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>               ... Success
+ duplicates none -c                       ... Success
+ duplicates none -c <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>            ... Success
+ duplicates none -q                       ... Success
+ duplicates none -q <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>            ... Success
+ duplicates one                           ... Success
+ duplicates one <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>                ... Success
+ duplicates one -c                        ... Success
+ duplicates one -c <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>             ... Success
+ duplicates one -q                        ... Success
+ duplicates one -q <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>             ... Success
+ duplicates two                           ... Success
+ duplicates two <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>                ... Success
+ duplicates two -c                        ... Success
+ duplicates two -c <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>             ... Success
+ duplicates two -q                        ... Success
+ duplicates two -q <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>             ... Success
+ duplicates none <span style="color: #008000">dirs</span>                     ... Success
+ duplicates none <span style="color: #008000">dirs</span> <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>          ... Success
+ duplicates none <span style="color: #008000">dirs</span> -c                  ... Success
+ duplicates none <span style="color: #008000">dirs</span> -c <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>       ... Success
+ duplicates none <span style="color: #008000">dirs</span> -q                  ... Success
+ duplicates none <span style="color: #008000">dirs</span> -q <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>       ... Success
+ duplicates one <span style="color: #008000">dirs</span>                      ... Success
+ duplicates one <span style="color: #008000">dirs</span> <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>           ... Success
+ duplicates one <span style="color: #008000">dirs</span> -c                   ... Success
+ duplicates one <span style="color: #008000">dirs</span> -c <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>        ... Success
+ duplicates one <span style="color: #008000">dirs</span> -q                   ... Success
+ duplicates one <span style="color: #008000">dirs</span> -q <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>        ... Success
+ duplicates two <span style="color: #008000">dirs</span>                      ... Success
+ duplicates two <span style="color: #008000">dirs</span> <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>           ... Success
+ duplicates two <span style="color: #008000">dirs</span> -c                   ... Success
+ duplicates two <span style="color: #008000">dirs</span> -c <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>        ... Success
+ duplicates two <span style="color: #008000">dirs</span> -q                   ... Success
+ duplicates two <span style="color: #008000">dirs</span> -q <span style="color: #666666">(</span>valgrind<span style="color: #666666">)</span>        ... Success
+
+   Score <span style="color: #666666">6</span>.00 / <span style="color: #666666">6</span>.00
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run test_duplicates.sh manually</span>
+$ ./bin/test_duplicates.sh
+</code></pre></div>
+
+<h2 id="activity-3-quiz">Activity 3: Quiz<a class="headerlink" href="#activity-3-quiz" title="Permanent link">&para;</a></h2>
+<p>Once you have completed all the activities above, you are to complete the
+following <strong>reflection quiz</strong>:</p>
+<div id="quiz-questions"></div>
+
+<div id="quiz-responses"></div>
+
+<script src="static/js/dredd-quiz.js"></script>
+<script>
+loadQuiz('static/json/homework08.json');
+</script>
+
+<pre style="display: none;" id="dr-container" class="codehilite"><code id="dredd-response"></code></pre>
+
+<p>As with <a href="reading01.html">Reading 01</a>, you will need to store your answers in a
+<code>homework08/answers.json</code> file.  You can use the form above to generate the
+contents of this file, or you can write the <a href="http://www.json.org/">JSON</a> by hand.</p>
+<p>To test your quiz, you can use the <code>check.py</code> script:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./check.py
+Checking homework08 quiz ...
+     Q01 <span style="color: #666666">0</span>.10
+     Q02 <span style="color: #666666">0</span>.10
+     Q03 <span style="color: #666666">1</span>.20
+     Q04 <span style="color: #666666">0</span>.20
+     Q05 <span style="color: #666666">0</span>.40
+   Score <span style="color: #666666">2</span>.00 / <span style="color: #666666">2</span>.00
+  Status Success
+</code></pre></div>
+
+<h2 id="guru-point-easter-egg-and-leetcode-2-points">Guru Point: Easter Egg and LeetCode (2 Points)<a class="headerlink" href="#guru-point-easter-egg-and-leetcode-2-points" title="Permanent link">&para;</a></h2>
+<p>For this week, there are two Guru Point opportunities.</p>
+<div class="alert alert-success">
+<h4 id="self-service-extension"><i class="fa fa-calendar"></i> Self-Service Extension<a class="headerlink" href="#self-service-extension" title="Permanent link">&para;</a></h4>
+<p>Remember that you can always <strong>forgo</strong> these Guru Points for <strong>two extra
+days</strong> to do the homework.  That is, if you need an extension, you can simply
+skip the Guru Point and you will automatically have until Monday to complete
+the assignment for full credit.</p>
+<p>Just leave a note on your <strong>Pull Request</strong> of your intentions.</p>
+</div>
+<h3 id="easter-egg-1-point">Easter Egg (1 Point)<a class="headerlink" href="#easter-egg-1-point" title="Permanent link">&para;</a></h3>
+<p>It is always fun to find <a href="https://en.wikipedia.org/wiki/Easter_egg_(media)">Easter Eggs</a> in programs and services.  For
+instance, here is the first video game <a href="https://en.wikipedia.org/wiki/Easter_egg_(media)">easter egg</a> (as discussed in <a href="https://www3.nd.edu/~pbui/teaching/cse.40850.sp18/">History
+of Computing</a>):</p>
+<div class="embed-responsive embed-responsive-16by9 thumbnail">
+  <iframe class="embed-responsive-item" width="854" height="480" src="https://www.youtube.com/embed/Xk7Mg3aqpzM" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+</div>
+
+<p>For extra credit, you are to add an <a href="https://en.wikipedia.org/wiki/Easter_egg_(media)">easter egg</a> to your <code>duplicates</code> program
+that does any of the following:</p>
+<ol>
+<li>
+<p>Display scrolling your favorite song, quote, or poem.</p>
+</li>
+<li>
+<p>Run a mini-game (ie. <a href="https://en.wikipedia.org/wiki/Rogue_(video_game)">rogue</a>, <a href="https://en.wikipedia.org/wiki/NetHack">nethack</a>, or any of the <a href="https://github.com/vattam/BSDGames">BSD games</a>).</p>
+</li>
+<li>
+<p>Display some sort of animation (ala <a href="https://github.com/abishekvashok/cmatrix">cmatrix</a> or <a href="https://github.com/sambattalio/chad_stride">chad_stride</a>).</p>
+</li>
+</ol>
+<p>For instance, the instructor's version of <code>duplicates</code> on the student
+machines contains the following easter egg:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ~pbui/pub/bin/duplicates -c -s
+</code></pre></div>
+
+<div class="alert alert-info">
+<h4 id="verification"><i class="fa fa-check"></i> Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h4>
+<p>To get credit for this Guru Point, you must show a TA a demonstration of your
+<a href="https://en.wikipedia.org/wiki/Easter_egg_(media)">easter egg</a> in action (or attach a video / screenshot to your <strong>Pull
+Request</strong>).  You have up until <strong>one week after</strong> this assignment is due to
+verify your Guru Point.</p>
+</div>
+<h3 id="leetcode-1-point">LeetCode (1 Point)<a class="headerlink" href="#leetcode-1-point" title="Permanent link">&para;</a></h3>
+<p>For extra credit, you may do any of the following <a href="https://leetcode.com/">LeetCode</a> programming
+challenges:</p>
+<ul>
+<li>
+<p><a href="https://leetcode.com/problems/longest-palindrome/">409. Longest Palindrome</a></p>
+</li>
+<li>
+<p><a href="https://leetcode.com/problems/integer-replacement/">397. Integer Replacement</a></p>
+</li>
+<li>
+<p><a href="https://leetcode.com/problems/shortest-completing-word/">748. Shortest Completing Word</a></p>
+</li>
+<li>
+<p><a href="https://leetcode.com/problems/the-kth-factor-of-n/">1492. The kth Factor of n</a></p>
+</li>
+</ul>
+<p>You can use any language you wish (though <a href="https://python.org/">Python</a> is recommended).</p>
+<div class="alert alert-info">
+<h4 id="verification_1"><i class="fa fa-check"></i> Verification<a class="headerlink" href="#verification_1" title="Permanent link">&para;</a></h4>
+<p>To get credit for this Guru Point, you must show a TA a demonstration of your
+<a href="https://leetcode.com/">LeetCode</a> solution passing the online check (or attach a video / screenshot
+to your <strong>Pull Request</strong>).  You have up until <strong>one week after</strong> this
+assignment is due to verify your Guru Point.</p>
+</div>
+<h2 id="submission">Submission<a class="headerlink" href="#submission" title="Permanent link">&para;</a></h2>
+<p>To submit your assignment, please commit your work to the <code>homework08</code> folder
+in your <strong>assignments</strong> <a href="https://www.github.com">GitHub</a> repository.  Your <code>homework08</code> folder should
+only contain at the following files:</p>
+<ul>
+<li><code>Makefile</code></li>
+<li><code>README.md</code></li>
+<li><code>answers.json</code></li>
+<li><code>bin/test_duplicates.sh</code></li>
+<li><code>bin/test_hash.sh</code></li>
+<li><code>bin/test_pair.sh</code></li>
+<li><code>bin/test_table.sh</code></li>
+<li><code>include/hash.h</code></li>
+<li><code>include/macros.h</code></li>
+<li><code>include/pair.h</code></li>
+<li><code>include/table.h</code></li>
+<li><code>lib/.gitkeep</code></li>
+<li><code>src/duplicates.c</code></li>
+<li><code>src/hash.c</code></li>
+<li><code>src/pair.c</code></li>
+<li><code>src/table.c</code></li>
+<li><code>tests/unit_pair.c</code></li>
+<li><code>tests/unit_hash.c</code></li>
+<li><code>tests/unit_table.c</code></li>
+</ul>
+<div class="alert alert-warning">
+<p><strong>Note</strong>: You must not modify any of the provided test scripts or unit tests.</p>
+</div>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># BE SURE TO DO THE PREPARATION STEPS IN ACTIVITY 0</span>
+<span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+
+$ <span style="color: #008000">cd</span> homework08                           <span style="color: #3D7B7B; font-style: italic"># Go to Homework 08 directory</span>
+...
+$ git add Makefile                        <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add bin/*.sh                        <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add include/*.h                     <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add lib/.gitkeep                    <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add tests/*.c                       <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework08: import&quot;</span>      <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/hash.c                      <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework08: hash&quot;</span>        <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/pair.c                      <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework08: pair&quot;</span>        <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/table.c                     <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework08: table&quot;</span>       <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/duplicates.c                <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework08: duplicates&quot;</span>  <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add answers.json                    <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework08: quiz&quot;</span>        <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+$ git push -u origin homework08           <span style="color: #3D7B7B; font-style: italic"># Push branch to GitHub</span>
+</code></pre></div>
+
+<div class="alert alert-danger">
+<h4 id="pull-request"><i class="fa fa-github"></i> Pull Request<a class="headerlink" href="#pull-request" title="Permanent link">&para;</a></h4>
+<p>Remember to create a <strong>Pull Request</strong> and assign the appropriate TA from the
+<a href="reading11_tas.html">Reading 11 TA List</a>.</p>
+<p><strong>DO NOT MERGE</strong> your own <strong>Pull Request</strong>.  The TAs use open <strong>Pull
+Requests</strong> to keep track of which assignments to grade.  Closing them
+yourself will cause a delay in grading and confuse the TAs.</p>
+</div>
+
+
+	    <div class="row">
+		<hr/>
+
+		<footer class="text-center">
+		    <p class="text-muted">
+		    <small>
+		    Built using
+		    <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>,
+		    <a href="http://fortawesome.github.com/Font-Awesome/">Font Awesome</a>, and
+		    <a href="http://www.python.org/">Python</a>.
+		    <br/>
+		    &copy; 2023 <a href="http://www.nd.edu">University of Notre Dame</a>
+		    </small>
+		    </p>
+		</footer>
+	    </div>
+
+	</div> <!-- /container -->
+
+	<!-- Bootstrap core JavaScript
+	================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	
+    </body>
+</html>
+
