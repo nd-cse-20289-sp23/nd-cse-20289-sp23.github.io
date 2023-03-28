@@ -438,7 +438,19 @@ body:       |
       specified by `path` and stores the result in `hexdigest`.
 
       To implement this function, you will need to use the [SHA1 function] from
-      the [OpenSSL] library.
+      the [OpenSSL] library using the following outline:
+
+      1. Use [stat] to get the size of the **file**.
+
+      2. Use [fopen] to open the **file** for reading.
+
+      3. Use [malloc] to allocate a **buffer** the size of the **file**.
+
+      4. Use [fread] to read from the **file** into the **buffer** you allocated.
+
+      5. Use the [SHA1 function] to compute the **raw digest**.
+
+      6. Convert the **raw digest** into the **hexadecimal digest**.
 
       <div class="alert alert-success" markdown="1">
       **Note**: You may adapt the code described in this
@@ -481,6 +493,9 @@ body:       |
   [SHA1]:           https://en.wikipedia.org/wiki/SHA1
   [SHA1 function]:  https://www.openssl.org/docs/man3.0/man3/SHA1.html
   [openssl]:        https://www.openssl.org/
+  [fopen]:          https://man7.org/linux/man-pages/man3/fopen.3.html
+  [malloc]:         https://man7.org/linux/man-pages/man3/malloc.3.html
+  [fread]:          https://man7.org/linux/man-pages/man3/fread.3.html
 
   ### Task 3: `src/pair.c`
 
