@@ -297,7 +297,9 @@ body:       |
       `s.strip()` in [Python]).
 
       <div class="alert alert-success" markdown="1">
-      **Hint**: Use two *reader* and *writer* pointers to modify the string.
+      **Hint**: Locate the **head** and **tail** of the string without the
+      leading and trailing spaces, and then copy from **head** to the front
+      of the string `s` until you reach the **tail**.
       </div>
 
   6. `void    str_reverse(char *s)`
