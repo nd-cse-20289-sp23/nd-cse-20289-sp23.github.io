@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<title>Homework 09: Thor&#39;s Hammer</title>
+
+	<!-- Bootstrap core CSS -->
+	<link href="static/css/blugold.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+	<style>
+	body {
+	    padding: 10px;
+	}
+	</style>
+    </head>
+    <body>
+	<div class="container">
+
+	    <div class="row">
+		<div class="page-header">
+		    <ul class="nav nav-pills pull-right">
+			
+		    </ul>
+		    <h1><i class="fa fa-code"></i> Homework 09: Thor&#39;s Hammer</h1>
+		</div>
+	    </div>
+
+            
+<p><img src="static/img/homework09-hammer.png" class="pull-right" width="128px"></p>
+<p>The goal of this homework assignment is to allow you to practice
+communicating across the <a href="https://en.wikipedia.org/wiki/Internet">Internet</a> via <a href="https://en.wikipedia.org/wiki/Network_socket">sockets</a> and performing parallel
+computing with multiple <a href="https://en.wikipedia.org/wiki/Process_(computing)">processes</a> in <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a>.  The first activity involves
+implementing a <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> library similar to <a href="https://python.org">Python</a>'s <a href="https://docs.python-requests.org">Requests</a>, while the
+second activity requires you to use this library to build a <code>thor</code> utility
+that resembles <a href="https://man7.org/linux/man-pages/man1/curl.1.html">curl</a> (except with the ability to make many requests using
+multiple <a href="https://en.wikipedia.org/wiki/Process_(computing)">processes</a>).</p>
+<p>For this assignment, record your source code and any responses to the
+following activities in the <code>homework09</code> folder of your <strong>assignments</strong>
+GitHub repository and push your work by <strong>noon, Saturday, April 29</strong>.</p>
+<h2 id="activity-0-preparation">Activity 0: Preparation<a class="headerlink" href="#activity-0-preparation" title="Permanent link">&para;</a></h2>
+<p>Before starting this homework assignment, you should first perform a <code>git pull</code>
+to retrieve any changes in your remote <a href="https://github.com">GitHub</a> repository:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ <span style="color: #008000">cd</span> path/to/repository                   <span style="color: #3D7B7B; font-style: italic"># Go to assignments repository</span>
+
+$ git checkout master                     <span style="color: #3D7B7B; font-style: italic"># Make sure we are in master branch</span>
+
+$ git pull --rebase                       <span style="color: #3D7B7B; font-style: italic"># Get any remote changes not present locally</span>
+</code></pre></div>
+
+<p>Next, create a new branch for this assignment:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ git checkout -b homework09              <span style="color: #3D7B7B; font-style: italic"># Create homework09 branch and check it out</span>
+</code></pre></div>
+
+<p>You are now ready to work on the activities below.</p>
+<div class="alert alert-info">
+<h4 id="frequently-asked-questions"><i class="fa fa-question"></i> Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h4>
+<div class="text-center">
+<iframe allowfullscreen="true" frameborder="0" height="389" mozallowfullscreen="true" src="https://docs.google.com/presentation/d/e/2PACX-1vTgw96cgRRD-KdxDFJ4TLdaiURN5F5zCpfidxisvCxDe2gycBlw9N7yl31RD-mNYsyLBzNlsjqmVcQb/embed?start=false&amp;loop=false&amp;delayms=3000" webkitallowfullscreen="true" width="480"></iframe>
+</div>
+</div>
+<h2 id="activity-1-http-library-9-points">Activity 1: HTTP Library (9 Points)<a class="headerlink" href="#activity-1-http-library-9-points" title="Permanent link">&para;</a></h2>
+<p>The goal of this assignment is for you translate the following <code>thor.py</code>
+<a href="https://python.org">Python</a> script into an equivalent <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> program by using <a href="https://en.wikipedia.org/wiki/System_call">system calls</a> such as
+<code>socket</code> and <code>fork</code>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">concurrent.futures</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">os</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">time</span>
+
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">requests</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Functions</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">usage</span>(status<span style="color: #666666">=0</span>):
+    progname <span style="color: #666666">=</span> os<span style="color: #666666">.</span>path<span style="color: #666666">.</span>basename(sys<span style="color: #666666">.</span>argv[<span style="color: #666666">0</span>])
+    <span style="color: #008000">print</span>(<span style="color: #BA2121">f&#39;&#39;&#39;Usage: </span><span style="color: #A45A77; font-weight: bold">{</span>progname<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> [-n HAMMERS] URL</span>
+<span style="color: #BA2121">    -n HAMMERS  How many times to hammer the URL</span>
+<span style="color: #BA2121">    &#39;&#39;&#39;</span>)
+    sys<span style="color: #666666">.</span>exit(status)
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">hammer</span>(url):
+    <span style="color: #BA2121; font-style: italic">&#39;&#39;&#39; Download and display the contents of the given URL.</span>
+
+<span style="color: #BA2121; font-style: italic">    Prints the bandwidth (MB/s) of the HTTP transaction.</span>
+<span style="color: #BA2121; font-style: italic">    &#39;&#39;&#39;</span>
+    <span style="color: #3D7B7B; font-style: italic"># Make HTTP Request</span>
+    start_time   <span style="color: #666666">=</span> time<span style="color: #666666">.</span>time()
+    response     <span style="color: #666666">=</span> requests<span style="color: #666666">.</span>get(url, allow_redirects<span style="color: #666666">=</span><span style="color: #008000; font-weight: bold">False</span>)
+    result       <span style="color: #666666">=</span> response<span style="color: #666666">.</span>status_code <span style="color: #666666">==</span> <span style="color: #666666">200</span>
+
+    <span style="color: #008000; font-weight: bold">if</span> result:
+        <span style="color: #3D7B7B; font-style: italic"># Compute elapsed time and bandwidth</span>
+        stop_time    <span style="color: #666666">=</span> time<span style="color: #666666">.</span>time()
+        elapsed_time <span style="color: #666666">=</span> stop_time <span style="color: #666666">-</span> start_time
+        bandwidth    <span style="color: #666666">=</span> <span style="color: #008000">len</span>(response<span style="color: #666666">.</span>content) <span style="color: #666666">/</span> (<span style="color: #666666">1&lt;&lt;20</span>) <span style="color: #666666">/</span> elapsed_time
+
+        <span style="color: #3D7B7B; font-style: italic"># Display HTTP body</span>
+        sys<span style="color: #666666">.</span>stdout<span style="color: #666666">.</span>write(response<span style="color: #666666">.</span>content<span style="color: #666666">.</span>decode())
+
+        <span style="color: #3D7B7B; font-style: italic"># Display Bandwidth (bytes / seconds)</span>
+        sys<span style="color: #666666">.</span>stderr<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&#39;Bandwidth: </span><span style="color: #A45A77; font-weight: bold">{</span>bandwidth<span style="color: #A45A77; font-weight: bold">:</span><span style="color: #BA2121">0.2f</span><span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> MB/s</span><span style="color: #AA5D1F; font-weight: bold">\n</span><span style="color: #BA2121">&#39;</span>)
+
+    <span style="color: #3D7B7B; font-style: italic"># Return if HTTP Request was successful</span>
+    <span style="color: #008000; font-weight: bold">return</span> result
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">throw</span>(url, hammers):
+    start_time   <span style="color: #666666">=</span> time<span style="color: #666666">.</span>time()
+    urls         <span style="color: #666666">=</span> [url]<span style="color: #666666">*</span>hammers
+
+    <span style="color: #3D7B7B; font-style: italic"># Throw all hammers concurrently using multiple processes</span>
+    <span style="color: #008000; font-weight: bold">with</span> concurrent<span style="color: #666666">.</span>futures<span style="color: #666666">.</span>ProcessPoolExecutor(hammers) <span style="color: #008000; font-weight: bold">as</span> executor:
+        result   <span style="color: #666666">=</span> <span style="color: #008000">all</span>(executor<span style="color: #666666">.</span>map(hammer, urls))
+
+    stop_time    <span style="color: #666666">=</span> time<span style="color: #666666">.</span>time()
+    elapsed_time <span style="color: #666666">=</span> stop_time <span style="color: #666666">-</span> start_time
+
+    <span style="color: #3D7B7B; font-style: italic"># Display elapsed time</span>
+    sys<span style="color: #666666">.</span>stderr<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&#39;Elapsed Time: </span><span style="color: #A45A77; font-weight: bold">{</span>elapsed_time<span style="color: #A45A77; font-weight: bold">:</span><span style="color: #BA2121">0.2f</span><span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> seconds</span><span style="color: #AA5D1F; font-weight: bold">\n</span><span style="color: #BA2121">&#39;</span>)
+
+    <span style="color: #3D7B7B; font-style: italic"># Return if all HTTP Requests were successful</span>
+    <span style="color: #008000; font-weight: bold">return</span> result
+
+<span style="color: #3D7B7B; font-style: italic"># Main Execution</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">main</span>():
+    hammers   <span style="color: #666666">=</span> <span style="color: #666666">1</span>
+    arguments <span style="color: #666666">=</span> sys<span style="color: #666666">.</span>argv[<span style="color: #666666">1</span>:]
+
+    <span style="color: #3D7B7B; font-style: italic"># Parse command line arguments</span>
+    <span style="color: #008000; font-weight: bold">while</span> arguments <span style="color: #AA22FF; font-weight: bold">and</span> arguments[<span style="color: #666666">0</span>]<span style="color: #666666">.</span>startswith(<span style="color: #BA2121">&#39;-&#39;</span>):
+        argument <span style="color: #666666">=</span> arguments<span style="color: #666666">.</span>pop(<span style="color: #666666">0</span>)
+        <span style="color: #008000; font-weight: bold">if</span> argument <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;-n&#39;</span>:
+            hammers <span style="color: #666666">=</span> <span style="color: #008000">int</span>(arguments<span style="color: #666666">.</span>pop(<span style="color: #666666">0</span>))
+        <span style="color: #008000; font-weight: bold">elif</span> argument <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;-h&#39;</span>:
+            usage(<span style="color: #666666">0</span>)
+        <span style="color: #008000; font-weight: bold">else</span>:
+            usage(<span style="color: #666666">1</span>)
+
+    <span style="color: #008000; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> arguments:
+        usage(<span style="color: #666666">1</span>)
+
+    url <span style="color: #666666">=</span> arguments<span style="color: #666666">.</span>pop(<span style="color: #666666">0</span>)
+    <span style="color: #008000; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> url<span style="color: #666666">.</span>startswith(<span style="color: #BA2121">&#39;http://&#39;</span>):
+        url <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;http://&#39;</span> <span style="color: #666666">+</span> url
+
+    <span style="color: #3D7B7B; font-style: italic"># Throw hammers at URL</span>
+    result <span style="color: #666666">=</span> throw(url, hammers)
+    sys<span style="color: #666666">.</span>exit(<span style="color: #AA22FF; font-weight: bold">not</span> result)
+
+<span style="color: #008000; font-weight: bold">if</span> <span style="color: #19177C">__name__</span> <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;__main__&#39;</span>:
+    main()
+</code></pre></div>
+
+<p>To do so, you will first create a <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> library called <code>libthor.a</code> which
+contains all the underlying functionality required to make <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> requests
+and utilize multiple <a href="https://en.wikipedia.org/wiki/Process_(computing)">processes</a> for concurrency.</p>
+<p>As discussed in class, web <strong>clients</strong> such as your <strong>web browser</strong> utilize
+<a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> to request data from remote web <strong>servers</strong>.  This communication
+involves the <strong>client</strong> using a <a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol">TCP</a> or streaming <a href="http://man7.org/linux/man-pages/man2/socket.2.html">socket</a> to connect to a
+<strong>server</strong> to send a <strong>request</strong> that looks something like this:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>GET /path HTTP/1.0
+Host: domain.com
+</code></pre></div>
+
+<p>The first line of the <strong>request</strong> specifies the operation (ie. <code>GET</code>)
+followed by the resource being request (ie. <code>/PATH</code>) and then the protocol
+spoken by the client (ie. <code>HTTP/1.0</code>).  After this first line, comes a series
+of <strong>headers</strong>, one of which is the <code>Host</code> or the name of the machine we are
+<strong>requesting</strong> the resource from.  To terminate the <strong>headers</strong>, the
+<strong>client</strong> writes a <strong>blank line</strong>.</p>
+<div class="alert alert-danger">
+<h4 id="dos-line-endings"><i class="fa fa-code"></i> DOS Line Endings<a class="headerlink" href="#dos-line-endings" title="Permanent link">&para;</a></h4>
+<p>It turns out that the <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> protocol uses our friend, <a href="https://en.wikipedia.org/wiki/Newline#Representation">DOS line endings</a>.
+This means that each line in the <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> request and response is terminated by
+<code>\r\n</code> or <code>CRLF</code>.  Keep this in mind when writing your <strong>request</strong> and
+reading the <strong>response</strong>.</p>
+</div>
+<div class="thumbnail">
+  <img src="static/img/homework09-overview.png" class="img-responsive">
+</div>
+
+<p>Once the <strong>request</strong> has been written to the <strong>server</strong>, the <strong>client</strong> then
+waits to read back the <strong>response</strong>, which looks something like this:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>HTTP/1.1 200 OK
+Content-Length: 1983
+
+&lt;html&gt;
+...
+&lt;/html&gt;
+</code></pre></div>
+
+<p>The first line of the <strong>response</strong> contains the status of the <strong>request</strong>.
+Successful <strong>requests</strong> have <code>200 OK</code> while non-successful <strong>requests</strong> will
+have different <a href="https://en.wikipedia.org/wiki/List_of_HTTP_status_codes">status codes</a> such as <code>301 Moved Permanently</code> or <code>404 Not
+Found</code>.  After this first line, the <strong>response</strong> will contain a series of
+<strong>headers</strong>, one of which is the <code>Content-Length</code> that tells the <strong>client</strong>
+how large the contents of the <strong>response</strong> body should be.  Following the
+<strong>headers</strong> is a <strong>blank line</strong>, and then the <strong>contents</strong> of the
+<strong>response</strong>.  This is usually the file or resource that was requested (ie.
+<a href="https://en.wikipedia.org/wiki/HTML">HTML</a> or image data).</p>
+<div class="alert alert-warning">
+<p><strong>Note</strong>: Not all <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> servers will return a <code>Content-Length</code>, so keep that
+  in mind when implementing your <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> client.</p>
+</div>
+<p>The overall goal of this assignment is for you to build your own version
+<a href="https://man7.org/linux/man-pages/man1/curl.1.html">curl</a> that speaks basic <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> using <a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol">TCP</a> sockets as described above.
+Additionally, your version of a <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> <strong>client</strong> will support <strong>hammering</strong>
+the <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> server by using multiple child <a href="https://en.wikipedia.org/wiki/Process_(computing)">processes</a> to make concurrent
+<a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> requests.</p>
+<p>The remainder of this document details how you are to first build a library
+that supports communicating via <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> and then the <code>thor</code> utility that
+provides a command-line interface to the library's functionality.</p>
+<h4 id="skeleton-code">Skeleton Code<a class="headerlink" href="#skeleton-code" title="Permanent link">&para;</a></h4>
+<p>To help you get started, the instructor has provided you with the following <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework09/homework09.tar.gz">skeleton code</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Go to assignments repository</span>
+$ <span style="color: #008000">cd</span> path/to/assignments/repository
+
+<span style="color: #3D7B7B; font-style: italic"># ------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># MAKE SURE YOU ARE NOT INSIDE homework09</span>
+<span style="color: #3D7B7B; font-style: italic"># ------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># MAKE SURE YOU ARE AT THE TOP-LEVEL DIRECTORY</span>
+<span style="color: #3D7B7B; font-style: italic"># ------------------------------------------------</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Download skeleton code tarball</span>
+$ curl -LO https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework09/homework09.tar.gz
+
+<span style="color: #3D7B7B; font-style: italic"># Extract skeleton code tarball</span>
+$ tar xzvf homework09.tar.gz
+</code></pre></div>
+
+<p>Once downloaded and extracted, you should see the following files in your
+<code>homework09</code> directory:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>homework09
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> Makefile               <span style="color: #3D7B7B; font-style: italic"># This is the Makefile for building all the project artifacts</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> README.md              <span style="color: #3D7B7B; font-style: italic"># This is the README file for recording your responses</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> bin                    <span style="color: #3D7B7B; font-style: italic"># This contains the binary executables and test scripts</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> loki.py              <span style="color: #3D7B7B; font-style: italic"># This is the Python script that implements an HTTP server</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_hammer.sh       <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the hammer and throw functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_request.sh      <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the Request structure</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_socket.sh       <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the socket functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_thor.sh         <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the thor utility</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> test_timestamp.sh    <span style="color: #3D7B7B; font-style: italic"># This is the shell script for testing the timestamp functions</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> include                <span style="color: #3D7B7B; font-style: italic"># This contains the header files</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> hammer.h             <span style="color: #3D7B7B; font-style: italic"># This is the C header file for hammer functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> macros.h             <span style="color: #3D7B7B; font-style: italic"># This is the C header file for macros</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> request.h            <span style="color: #3D7B7B; font-style: italic"># This is the C header file for Request structure</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> socket.h             <span style="color: #3D7B7B; font-style: italic"># This is the C header file for socket functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> timestamp.h          <span style="color: #3D7B7B; font-style: italic"># This is the C header file for timestamp functions</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> lib                    <span style="color: #3D7B7B; font-style: italic"># This contains the library files</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> src                    <span style="color: #3D7B7B; font-style: italic"># This contains the C implementation files</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> hammer.c             <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the hammer functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> request.c            <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the Request structure</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> socket.c             <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the socket functions</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> thor.c               <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the thor utility</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> timestamp.c          <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the timestamp functions</span>
+    <span style="color: #AA5D1F; font-weight: bold">\_</span> tests                  <span style="color: #3D7B7B; font-style: italic"># This contains the unit test C implementation files</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> unit_hammer.c        <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the hammer unit test</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> unit_request.c       <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the Request unit test</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> unit_socket.c        <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the socket unit test</span>
+      <span style="color: #AA5D1F; font-weight: bold">\_</span> unit_timestamp.c     <span style="color: #3D7B7B; font-style: italic"># This is the C implementation file for the timestamp unit test</span>
+</code></pre></div>
+
+<p>The details on what you need to implement are described in the following
+sections.</p>
+<h3 id="task-0-headers">Task 0: Headers<a class="headerlink" href="#task-0-headers" title="Permanent link">&para;</a></h3>
+<p>The following is a description of the <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> files included in the
+<a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework09/homework09.tar.gz">skeleton code</a>.</p>
+<h4 id="includerequesth"><code>include/request.h</code><a class="headerlink" href="#includerequesth" title="Permanent link">&para;</a></h4>
+<p>The <code>include/request.h</code> file is the <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> file for the <code>Request</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>.  In
+addition to the function prototypes, this <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> defines the following
+type:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">typedef</span><span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">struct</span><span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #B00040">char</span><span style="color: #bbbbbb"> </span><span style="color: #666666">*</span>host;<span style="color: #bbbbbb">     </span><span style="color: #3D7B7B; font-style: italic">/* URL host */</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #B00040">char</span><span style="color: #bbbbbb"> </span><span style="color: #666666">*</span>port;<span style="color: #bbbbbb">     </span><span style="color: #3D7B7B; font-style: italic">/* URL port */</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #B00040">char</span><span style="color: #bbbbbb"> </span><span style="color: #666666">*</span>path;<span style="color: #bbbbbb">     </span><span style="color: #3D7B7B; font-style: italic">/* URL path */</span><span style="color: #bbbbbb"></span>
+}<span style="color: #bbbbbb"> </span>Request;<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>This defines a <code>Request</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a> type consisting of three [string]s:</p>
+<ol>
+<li><code>host</code> contains the <strong>host</strong> component of a <a href="https://en.wikipedia.org/wiki/URL">URL</a>.</li>
+<li><code>port</code> contains the <strong>port</strong> component of a <a href="https://en.wikipedia.org/wiki/URL">URL</a>.</li>
+<li><code>path</code> contains the <strong>path</strong> component of a <a href="https://en.wikipedia.org/wiki/URL">URL</a>.</li>
+</ol>
+<div class="thumbnail">
+  <img src="static/img/homework09-url.png" class="img-responsive">
+</div>
+
+<p>As shown above, a <a href="https://en.wikipedia.org/wiki/URL">URL</a> may contain <strong>five</strong> different components:
+  <strong>protocol</strong>, <strong>host</strong>, <strong>port</strong>, <strong>path</strong>, and <strong>query string</strong>.  The
+  <code>URL</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a> only needs to store the <code>host</code>, <code>port</code>, and <code>path</code> of any
+  <a href="https://en.wikipedia.org/wiki/URL">URL</a> provided by the user.</p>
+<div class="alert alert-warning">
+<h4 id="missing-url-components"><i class="fa fa-link"></i> Missing URL Components<a class="headerlink" href="#missing-url-components" title="Permanent link">&para;</a></h4>
+<p><strong>Note</strong>: Not all <a href="https://en.wikipedia.org/wiki/URL">URL</a>s will specify every component explicitly.  Some may
+  be missing the <strong>protocol</strong> or the <strong>port</strong> or even the <strong>path</strong> (the
+  <strong>host</strong> must always be given).</p>
+<p>For instance, here are some valid <a href="https://en.wikipedia.org/wiki/URL">URL</a>s you will need to support:</p>
+<ul>
+<li><code>example.com</code></li>
+<li><code>http://example.com</code></li>
+<li><code>http://example.com:8888</code></li>
+<li><code>http://example.com/data</code></li>
+<li><code>example.com:9999/data</code></li>
+</ul>
+<p>If the <strong>port</strong> is not specified, then you are to assume the default <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a>
+port: <code>80</code>.  If a <strong>path</strong> is not specified, then you can assume an empty
+path: <code>""</code>.</p>
+</div>
+<h4 id="includehammerh-includesocketh-includetimestamph"><code>include/hammer.h</code>, <code>include/socket.h</code>, <code>include/timestamp.h</code><a class="headerlink" href="#includehammerh-includesocketh-includetimestamph" title="Permanent link">&para;</a></h4>
+<p>The <code>include/hammer.h</code>, <code>include/socket.h</code>, and <code>include/timestamp.h</code>
+<a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> files contain function prototypes but do not introduce any new types
+or <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>s.</p>
+<p>More details on how to implement the functions declared in these <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a>
+files is provided below.</p>
+<h4 id="includemacrosh"><code>include/macros.h</code><a class="headerlink" href="#includemacrosh" title="Permanent link">&para;</a></h4>
+<p>Finally, the <code>include/macros.h</code> <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> file provides a <code>debug</code> <a href="https://en.wikipedia.org/wiki/C_preprocessor#Macro_definition_and_expansion">macro</a> that
+you can use to insert debugging statements into your code (rather than
+<a href="https://man7.org/linux/man-pages/man3/printf.3.html">printf</a>):</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>debug(<span style="color: #BA2121">&quot;foo = %d&quot;</span>,<span style="color: #bbbbbb"> </span>foo);<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>The advantage of using this <a href="https://en.wikipedia.org/wiki/C_preprocessor#Macro_definition_and_expansion">macro</a> is that it displays the file name, line
+number, and function name where the command is called in its output, along
+with the formatted message you specified.</p>
+<p>Likewise, the <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> file also provides a <code>streq</code> <a href="https://en.wikipedia.org/wiki/C_preprocessor#Macro_definition_and_expansion">macro</a> that you can use
+instead of <a href="http://man7.org/linux/man-pages/man3/strcmp.3.html">strcmp</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">if</span><span style="color: #bbbbbb"> </span>(streq(source,<span style="color: #bbbbbb"> </span>target))<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>...<span style="color: #bbbbbb"></span>
+}<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p>For this task, you do not need to modify these <a href="https://en.wikipedia.org/wiki/Include_directive#C.2FC.2B.2B">header</a> files. Instead, you
+should review them and ensure you understand the provided code.</p>
+<h3 id="task-1-makefile">Task 1: <code>Makefile</code><a class="headerlink" href="#task-1-makefile" title="Permanent link">&para;</a></h3>
+<p>Once again, the <code>Makefile</code> contains all the rules or recipes for building the
+project artifacts (e.g. <code>libthor.a</code>, <code>thor</code>, etc.).  Although the provided
+<code>Makefile</code> contains most of the variable definitions and <code>test</code> recipes, you
+must add the appropriate rules for <code>libthor.a</code>, <code>unit_hammer</code>,
+<code>unit_request</code>, <code>unit_socket</code>, <code>unit_timestamp</code>, <code>thor</code>, and any intermediate
+objects.  The dependencies for these targets are shown in the <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</a> below:</p>
+<div class="thumbnail">
+  <img src="static/img/homework09-makefile.png" class="img-responsive">
+</div>
+
+<div class="alert alert-info">
+<h4 id="makefile-variables"><i class="fa fa-cogs"></i> Makefile Variables<a class="headerlink" href="#makefile-variables" title="Permanent link">&para;</a></h4>
+<p>You <strong>must</strong> use the <code>CC</code>, <code>CFLAGS</code>, <code>LD</code>, <code>LDFLAGS</code>, <code>AR</code>, and <code>ARFLAGS</code>
+variables when appropriate in your <a href="https://www.gnu.org/software/make/manual/html_node/Rules.html">rules</a>.</p>
+<ul>
+<li>
+<p><strong>Note</strong>: Although we are producing a <a href="https://en.wikipedia.org/wiki/Static_library#Creating_static_libraries_in_C.2FC.2B.2B">static library</a> in the form of
+    <code>libthor.a</code>, we will <strong>not</strong> be statically linking our executables.
+    Instead, we will use the <code>libthor.a</code> as another <a href="https://en.wikipedia.org/wiki/Object_file">object</a> file when we
+    <strong>link</strong> our executables.</p>
+</li>
+<li>
+<p><strong>Note</strong>: The binary executables must go in the <code>bin</code> folder.</p>
+</li>
+</ul>
+</div>
+<p>Once you have a working <code>Makefile</code>, you should be able to run the following
+commands:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Build all TARGETS</span>
+$ make
+Compiling src/thor.o...
+Compiling src/timestamp.o...
+Compiling src/socket.o...
+Compiling src/request.o...
+Compiling src/hammer.o...
+Linking lib/libthor.a...
+Linking bin/thor...
+
+<span style="color: #3D7B7B; font-style: italic"># Run all tests</span>
+$ make <span style="color: #008000">test</span>
+Compiling tests/unit_timestamp.o...
+Linking bin/unit_timestamp...
+Testing timestamp...
+
+<span style="color: #3D7B7B; font-style: italic"># Simulate build with tracing output</span>
+$ make -n
+<span style="color: #008000">echo</span> Compiling src/thor.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/thor.o src/thor.c
+<span style="color: #008000">echo</span> Compiling src/timestamp.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/timestamp.o src/timestamp.c
+<span style="color: #008000">echo</span> Compiling src/socket.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/socket.o src/socket.c
+<span style="color: #008000">echo</span> Compiling src/request.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/request.o src/request.c
+<span style="color: #008000">echo</span> Compiling src/hammer.o...
+gcc -g -Wall -std<span style="color: #666666">=</span>gnu99 -Iinclude -c -o src/hammer.o src/hammer.c
+<span style="color: #008000">echo</span> Linking lib/libthor.a...
+ar rcs lib/libthor.a src/timestamp.o src/socket.o src/request.o src/hammer.o
+<span style="color: #008000">echo</span> Linking bin/thor...
+gcc -Llib -o bin/thor src/thor.o lib/libthor.a
+</code></pre></div>
+
+<p>Depending on your compiler, you may see some warnings with the initial
+<a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework09/homework09.tar.gz">skeleton code</a>.  Likewise, the test programs will all fail in some fashion.</p>
+<h3 id="task-2-srctimestampc">Task 2: <code>src/timestamp.c</code><a class="headerlink" href="#task-2-srctimestampc" title="Permanent link">&para;</a></h3>
+<p>The <code>src/timestamp.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation for time related
+functions.  For this task, you will need to implement the following function:</p>
+<ol>
+<li>
+<p><code>double timestamp()</code></p>
+<blockquote>
+<p>This function returns a <code>double</code> that corresponds to the current time
+in <strong>seconds</strong>.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>You must check if any of the <a href="https://en.wikipedia.org/wiki/System_call">system calls</a> fail.</p>
+</li>
+<li>
+<p>You must use <a href="https://man7.org/linux/man-pages/man2/gettimeofday.2.html">gettimeofday</a> to account for both <strong>seconds</strong> and
+  <strong>microseconds</strong> using this formula:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>timestamp<span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span>seconds<span style="color: #bbbbbb"> </span><span style="color: #666666">+</span><span style="color: #bbbbbb"> </span>(microseconds<span style="color: #bbbbbb"> </span><span style="color: #666666">/</span><span style="color: #bbbbbb"> </span><span style="color: #666666">1000000.0</span>).<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+</li>
+</ul>
+</div>
+</li>
+</ol>
+<p>As you implement <code>src/timestamp.c</code>, you can test it by running the <code>test-timestamp</code>
+target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-timestamp target</span>
+$ make test-timestamp
+Compiling tests/unit_timestamp.o...
+Linking bin/unit_timestamp...
+Testing timestamp...
+ timestamp                                          ... Success
+
+   Score <span style="color: #666666">0</span>.50 / <span style="color: #666666">0</span>.50
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run unit_timestamp manually</span>
+$ bin/unit_timestamp <span style="color: #666666">0</span>
+</code></pre></div>
+
+<h3 id="task-3-srcsocketc">Task 3: <code>src/socket.c</code><a class="headerlink" href="#task-3-srcsocketc" title="Permanent link">&para;</a></h3>
+<p>The <code>src/socket.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation for the <a href="http://man7.org/linux/man-pages/man2/socket.2.html">socket</a>
+functions.  For this task, you will need to implement the following
+function:</p>
+<ol>
+<li>
+<p><code>FILE *socket_dial(const char *host, const char *port)</code></p>
+<blockquote>
+<p>This function uses <a href="http://man7.org/linux/man-pages/man2/socket.2.html">socket</a> to connect to the given <code>host</code> and <code>port</code>
+using <a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol">TCP</a> and returns a <strong>read/writable</strong> <code>FILE</code> stream corresponding
+to the <a href="http://man7.org/linux/man-pages/man2/socket.2.html">socket</a>.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>You must check if any of the <a href="https://en.wikipedia.org/wiki/System_call">system calls</a> fail.</p>
+</li>
+<li>
+<p>You may wish to use <a href="http://man7.org/linux/man-pages/man3/getaddrinfo.3.html">getaddrinfo</a>, <a href="http://man7.org/linux/man-pages/man2/socket.2.html">socket</a>, <a href="http://man7.org/linux/man-pages/man2/connect.2.html">connect</a>, <a href="http://man7.org/linux/man-pages/man3/getaddrinfo.3.html">freeaddrinfo</a>,
+  and <a href="https://man7.org/linux/man-pages/man3/fopen.3.html">fdopen</a>.
+</div></p>
+</li>
+</ul>
+</li>
+</ol>
+<p>As you implement <code>src/socket.c</code>, you can test it by running the <code>test-socket</code>
+target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-socket target</span>
+$ make test-socket
+Compiling tests/unit_socket.o...
+Linking bin/unit_socket...
+Testing socket...
+ socket_dial_success                                ... Success
+ socket_dial_failure                                ... Success
+ socket_dial_mode                                   ... Success
+
+   Score <span style="color: #666666">1</span>.00 / <span style="color: #666666">1</span>.00
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run unit_socket manually</span>
+$ bin/unit_socket <span style="color: #666666">0</span>
+</code></pre></div>
+
+<h3 id="task-4-srcrequestc">Task 4: <code>src/request.c</code><a class="headerlink" href="#task-4-srcrequestc" title="Permanent link">&para;</a></h3>
+<p>The <code>src/request.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation for the <code>Request</code>
+<a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>.  For this task, you will need to implement the following functions:</p>
+<ol>
+<li>
+<p><code>Request * request_create(const char *url)</code></p>
+<blockquote>
+<p>This function allocates a new <code>Request</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>, sets its <code>host</code>,
+<code>port</code>, and <code>path</code> fields based on the components in the given <code>url</code>, and
+returns the allocated <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>You must check if allocation fails.</p>
+</li>
+<li>
+<p>You must allocate and copy <code>host</code>, <code>port</code>, and <code>path</code> (consider <a href="https://www.man7.org/linux/man-pages/man3/strdup.3.html">strdup</a>).</p>
+</li>
+<li>
+<p>You may wish to copy the <code>url</code> string to a local <strong>buffer</strong> that you
+  can manipulate.</p>
+</li>
+<li>
+<p>You may wish to use <a href="https://man7.org/linux/man-pages/man3/strstr.3.html">strstr</a> and <a href="https://man7.org/linux/man-pages/man3/strchr.3.html">strchr</a> to search the local
+  <strong>buffer</strong> for the appropriate <strong>delimiters</strong> (e.g. <code>HOST_DELIMITER</code>,
+  <code>PATH_DELIMITER</code>, and <code>PORT_DELIMITER</code>) and split the string into
+  different components.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>void request_delete(Request *request)</code></p>
+<blockquote>
+<p>This function deallocates the given <code>Request</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a> and any
+previously allocated fields such as <code>host</code>, <code>port</code>, and <code>path</code>.</p>
+</blockquote>
+</li>
+<li>
+<p><code>ssize_t request_stream(const Request *request, FILE *stream)</code></p>
+<blockquote>
+<p>This function makes a <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> request with the given <code>Request</code> <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a>
+by using <code>socket_dial</code> and writes the response <strong>body</strong> to the given
+<code>stream</code>.  It returns the number of bytes written to the output <code>stream</code>
+or <code>-1</code> if any error was experienced during the <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> request.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>You must check if any of the <a href="https://en.wikipedia.org/wiki/System_call">system calls</a> fail.</p>
+</li>
+<li>
+<p>You will want to follow the <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> transaction steps described above
+  and outlined below:</p>
+<ol>
+<li>Connect to remote host and port.</li>
+<li>Send <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> request to remote server.</li>
+<li>Read response status and verify success.</li>
+<li>Read response headers (until there is an empty line).</li>
+<li>Read response body and copy to <code>stream</code>.</li>
+<li>Close connection.</li>
+<li><p>Return number of bytes written to <code>stream</code>.</p></li>
+</ol>
+</li>
+<li>
+<p>Remember that <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> uses <a href="https://en.wikipedia.org/wiki/Newline#Representation">DOS line endings</a> and terminates each line
+  with <code>\r\n</code>.</p>
+</li>
+<li>
+<p>You may wish to use <a href="https://man7.org/linux/man-pages/man3/strstr.3.html">strstr</a> to check the response status.</p>
+</li>
+<li>
+<p>You may wish to use <a href="https://man7.org/linux/man-pages/man3/scanf.3.html">sscanf</a> to parse the response headers for the
+  value of <code>Content-Length</code>.</p>
+</li>
+<li>
+<p>You may wish to use <a href="https://man7.org/linux/man-pages/man3/fgetc.3.html">fgets</a> to read the response status and headers.</p>
+</li>
+<li>
+<p>You must use <a href="https://man7.org/linux/man-pages/man3/fread.3.html">fread</a> and <a href="https://man7.org/linux/man-pages/man3/fread.3.html">fwrite</a> to read the response body since it
+  may contain binary data.</p>
+</li>
+<li>
+<p>If the server provides a <code>Content-Length</code> and the number of bytes
+  written to <code>steam</code> does not match, then the function should return <code>-1</code>
+  to indicate an error.  Otherwise, if there is no <code>Content-Length</code> or
+  the number of bytes written matches, then it should return the number
+  of bytes written.</p>
+</li>
+<li>
+<p>Only a <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> status of <code>200 OK</code> is considered <strong>successful</strong>.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+<p>As you implement <code>src/request.c</code>, you can test it by running the
+<code>test-request</code> target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-request target</span>
+$ make test-request
+Compiling tests/unit_request.o...
+Linking bin/unit_request...
+Testing request...
+ request_create                                     ... Success
+ request_delete                                     ... Success
+ request_stream_success                             ... Success
+ request_stream_failure                             ... Success
+
+   Score <span style="color: #666666">3</span>.00 / <span style="color: #666666">3</span>.00
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run unit_request manually</span>
+$ bin/unit_request <span style="color: #666666">0</span>
+</code></pre></div>
+
+<h3 id="task-5-srchammerc">Task 5: <code>src/hammer.c</code><a class="headerlink" href="#task-5-srchammerc" title="Permanent link">&para;</a></h3>
+<p>The <code>src/hammer.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation for <code>hammer</code> and <code>throw</code>
+functions.  For this task, you will need to implement the following functions:</p>
+<ol>
+<li>
+<p><code>bool hammer(const URL *url, FILE *stream)</code></p>
+<blockquote>
+<p>This function performs a <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> request by creating a <code>Request</code>
+<a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">struct</a> and <code>request_stream</code>.  It will measure the bandwidth by using
+the <code>timestamp</code> function to compute the total elapsed time of the <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a>
+request and then dividing it by the number of bytes written to the
+<code>stream</code>.  It will return <code>true</code> if the <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> request was successful.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>You must check if any of the <a href="https://en.wikipedia.org/wiki/System_call">system calls</a> fail.</p>
+</li>
+<li>
+<p>You must compute the <strong>bandwidth</strong> by using the following formula:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>bandwidth<span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span>bytes_written<span style="color: #bbbbbb"> </span><span style="color: #666666">/</span><span style="color: #bbbbbb"> </span><span style="color: #666666">1048576.0</span><span style="color: #bbbbbb"> </span><span style="color: #666666">/</span><span style="color: #bbbbbb"> </span>(end_time<span style="color: #bbbbbb"> </span><span style="color: #666666">-</span><span style="color: #bbbbbb"> </span>start_time)<span style="color: #bbbbbb"></span>
+</code></pre></div>
+
+<p><code>bytes_written</code> will be returned from <code>request_stream()</code> while
+<code>end_time</code> and <code>start_time</code> can be retrieved from <code>timestamp()</code>.</p>
+<p>You must print out the <strong>bandwidth</strong> to <code>stderr</code> in the following
+format: <code>Bandwidth: %0.2lf MB/s</code>.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>bool throw(const URL *url, size_t hammers, FILE *stream)</code></p>
+<blockquote>
+<p>This function uses <a href="https://man7.org/linux/man-pages/man2/fork.2.html">fork</a> to first create <code>hammers</code> number of
+<a href="https://en.wikipedia.org/wiki/Process_(computing)">processes</a> where each child <a href="https://en.wikipedia.org/wiki/Process_(computing)">process</a> performs an <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> request using
+the <code>hammer</code> function on the given <code>url</code> and <code>stream</code>.  After throwing
+all the hammers, the parent <a href="https://en.wikipedia.org/wiki/Process_(computing)">process</a> must <a href="https://man7.org/linux/man-pages/man2/wait.2.html">wait</a> on each child <a href="https://en.wikipedia.org/wiki/Process_(computing)">process</a>
+and displays the total <strong>elapsed time</strong> for the whole function.  It will
+return <code>true</code> if all child <a href="https://en.wikipedia.org/wiki/Process_(computing)">processes</a> reported success, otherwise
+<code>false</code>.</p>
+</blockquote>
+<p><div class="alert alert-success" markdown="1">
+<strong>Note</strong>:</p>
+<ul>
+<li>
+<p>You must check if any of the <a href="https://en.wikipedia.org/wiki/System_call">system calls</a> fail.</p>
+</li>
+<li>
+<p>The parent must <a href="https://man7.org/linux/man-pages/man2/fork.2.html">fork</a> all the child <a href="https://en.wikipedia.org/wiki/Process_(computing)">processes</a> and then <a href="https://man7.org/linux/man-pages/man2/wait.2.html">wait</a> for
+  them.  It will need to use the <code>timestamp()</code> function to compute the
+  overall <strong>elapsed time</strong> for the function.</p>
+</li>
+<li>
+<p>You must print out the <strong>elapsed time</strong> to <code>stderr</code> in the following
+  format: <code>Elapsed Time: %0.2lf seconds</code>.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+<p>As you implement <code>src/hammer.c</code>, you can test it by running the <code>test-hammer</code>
+target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-hammer target</span>
+$ make test-hammer
+Compiling tests/unit_hammer.o...
+Linking bin/unit_hammer...
+Testing hammer...
+ hammer_success                                     ... Success
+ hammer_failure                                     ... Success
+ hammer_bandwidth                                   ... Success
+ throw_success                                      ... Success
+ throw_failure                                      ... Success
+ throw_elapsed                                      ... Success
+ throw_clones                                       ... Success
+
+   Score <span style="color: #666666">4</span>.50 / <span style="color: #666666">4</span>.50
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run unit_hammer manually</span>
+$ bin/unit_hammer <span style="color: #666666">0</span>
+</code></pre></div>
+
+<h2 id="activity-2-thor-5-points">Activity 2: Thor (5 Points)<a class="headerlink" href="#activity-2-thor-5-points" title="Permanent link">&para;</a></h2>
+<p>Once you have a working <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> library, you are to complete the
+<code>src/thor.c</code> program:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Display usage</span>
+$ ./bin/thor -h
+Usage: ./bin/thor <span style="color: #666666">[</span>options<span style="color: #666666">]</span> URL
+    -n HAMMERS    How many <span style="color: #008000">times</span> to hammer the URL
+</code></pre></div>
+
+<p>The <code>bin/thor</code> program takes the given <code>URL</code> and makes <code>N</code> requests to it
+using multiple <a href="https://en.wikipedia.org/wiki/Process_(computing)">processes</a> which write their responses to <strong>standard
+output</strong>.  If <code>N</code> is not specified, then it defaults to <code>1</code>.</p>
+<h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
+<p>Here are some examples of <code>bin/thor</code> in action:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Throw one hammer at example.com</span>
+$ ./bin/thor example.com
+&lt;!doctype html&gt;
+    &lt;title&gt;Example Domain&lt;/title&gt;
+...
+&lt;/body&gt;
+&lt;/html&gt;
+Bandwidth: <span style="color: #666666">0</span>.05 MB/s
+Elapsed Time: <span style="color: #666666">0</span>.02 seconds
+
+<span style="color: #3D7B7B; font-style: italic"># Throw two hammers at example.com</span>
+$ ./bin/thor -n <span style="color: #666666">2</span> example.com
+&lt;!doctype html&gt;
+    &lt;title&gt;Example Domain&lt;/title&gt;
+...
+&lt;/body&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+&lt;/html&gt;
+Bandwidth: <span style="color: #666666">0</span>.05 MB/s
+Bandwidth: <span style="color: #666666">0</span>.05 MB/s
+Elapsed Time: <span style="color: #666666">0</span>.02 seconds
+</code></pre></div>
+
+<div class="alert alert-success">
+<p><strong>Note</strong>: Each <strong>child</strong> <a href="https://en.wikipedia.org/wiki/Process_(computing)">process</a> should print the <strong>bandwidth</strong> it computes
+to <code>stderr</code>, while the <strong>parent</strong> prints the <strong>elapsed time</strong> to <code>stderr</code>.</p>
+</div>
+<h3 id="task-1-srcthorc">Task 1: <code>src/thor.c</code><a class="headerlink" href="#task-1-srcthorc" title="Permanent link">&para;</a></h3>
+<p>The <code>src/thor.c</code> file contains the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> implementation of the <code>thor</code>
+tool described above.</p>
+<p>To complete this program, you will need to do the following:</p>
+<ol>
+<li><strong>Parse</strong> the command-line arguments.</li>
+<li><strong>Hammer</strong> the given <a href="https://en.wikipedia.org/wiki/URL">URL</a> with <code>throw()</code>.</li>
+</ol>
+<p>As you implement <code>src/thor.c</code>, you can test it by running the <code>test-thor</code>
+target:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic"># Run test-thor target</span>
+$ make test-thor
+Compiling src/thor.o...
+Linking bin/thor...
+Testing thor...
+ thor                                               ... Success
+ thor -h                                            ... Success
+ thor -?                                            ... Success
+ thor http://example.com                            ... Success
+ thor -n <span style="color: #666666">2</span> http://example.com                       ... Success
+ thor http://nd.edu                                 ... Success
+ thor -n <span style="color: #666666">1</span> http://nd.edu                            ... Success
+ thor h4x0r.space                                   ... Success
+ thor -n <span style="color: #666666">4</span> h4x0r.space                              ... Success
+ thor h4x0r.space:9898/walden.txt                   ... Success
+ thor -n <span style="color: #666666">4</span> h4x0r.space:9898/walden.txt              ... Success
+ thor h4x0r.space:9898/gatsby.txt                   ... Success
+ thor -n <span style="color: #666666">5</span> h4x0r.space:9898/gatsby.txt              ... Success
+ thor http://h4x0r.space:9898/warandpeace.txt       ... Success
+ thor -n <span style="color: #666666">3</span> http://h4x0r.space:9898/warandpeace.txt  ... Success
+
+   Score <span style="color: #666666">5</span>.00 / <span style="color: #666666">5</span>.00
+  Status Success
+
+<span style="color: #3D7B7B; font-style: italic"># Run test_thor.sh manually</span>
+$ bin/test_thor.sh
+</code></pre></div>
+
+<h2 id="activity-3-quiz-2-points">Activity 3: Quiz (2 Points)<a class="headerlink" href="#activity-3-quiz-2-points" title="Permanent link">&para;</a></h2>
+<p>Once you have completed all the activities above, you are to complete the
+following <strong>reflection quiz</strong>:</p>
+<div id="quiz-questions"></div>
+
+<div id="quiz-responses"></div>
+
+<script src="static/js/dredd-quiz.js"></script>
+<script>
+loadQuiz('static/json/homework09.json');
+</script>
+
+<pre style="display: none;" id="dr-container" class="codehilite"><code id="dredd-response"></code></pre>
+
+<p>As with <a href="reading01.html">Reading 01</a>, you will need to store your answers in a
+<code>homework09/answers.json</code> file.  You can use the form above to generate the
+contents of this file, or you can write the <a href="https://www.json.org/">JSON</a> by hand.</p>
+<p>To test your quiz, you can use the <code>check.py</code> script:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>$ ./check.py
+Checking homework09 quiz ...
+     Q01 <span style="color: #666666">0</span>.40
+     Q02 <span style="color: #666666">0</span>.40
+     Q03 <span style="color: #666666">0</span>.30
+     Q04 <span style="color: #666666">0</span>.30
+     Q05 <span style="color: #666666">0</span>.30
+     Q06 <span style="color: #666666">0</span>.30
+   Score <span style="color: #666666">2</span>.00 / <span style="color: #666666">2</span>.00
+  Status Success
+</code></pre></div>
+
+<h2 id="guru-point-troll-irc-bot-vps-3-points">Guru Point: TROLL, IRC Bot, VPS (3 Points)<a class="headerlink" href="#guru-point-troll-irc-bot-vps-3-points" title="Permanent link">&para;</a></h2>
+<p>For this week, there are three Guru Point opportunities.</p>
+<div class="alert alert-success">
+<h4 id="self-service-extension"><i class="fa fa-calendar"></i> Self-Service Extension<a class="headerlink" href="#self-service-extension" title="Permanent link">&para;</a></h4>
+<p>Remember that you can always <strong>forgo</strong> these Guru Points for <strong>two extra
+days</strong> to do the homework.  That is, if you need an extension, you can simply
+skip the Guru Points and you will automatically have until Monday to complete
+the assignment for full credit.</p>
+<p>Just leave a note on your <strong>Pull Request</strong> of your intensions.</p>
+</div>
+<h3 id="troll-1-point">TROLL (1 Point)<a class="headerlink" href="#troll-1-point" title="Permanent link">&para;</a></h3>
+<p>For extra credit, you are to use <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> and <a href="https://en.wikipedia.org/wiki/System_call">system calls</a> to implement your own
+version of the <code>TROLL</code> from <a href="homework01.html">Homework 01</a>.  Recall, that the <code>TROLL</code> was a
+process that intercepted signals such as <code>SIGINT</code> and <code>SIGTERM</code> and taunted
+you when you tried to terminate it. Your version of the <code>TROLL</code> should do
+something similar (prevent easy termination)... but its taunts and other
+aesthetic details are up to you.</p>
+<div class="alert alert-info">
+<h4 id="verification"><i class="fa fa-check"></i> Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h4>
+<p>To get credit for this Guru Point, you must show either the instructor or TA
+a demonstration of your <code>TROLL</code> in action (or attach a video / screenshot to
+your <strong>Pull Request</strong>).  You have up until <strong>Friday, April, 29</strong> to verify
+your guru point.</p>
+</div>
+<h3 id="irc-bot-1-point">IRC Bot (1 Point)<a class="headerlink" href="#irc-bot-1-point" title="Permanent link">&para;</a></h3>
+<p>For extra credit, you are to use <a href="https://python.org">Python</a> and <a href="https://en.wikipedia.org/wiki/Network_socket">sockets</a> to implement your own
+version of <a href="https://github.com/pbui/bobbit/">bobbit</a>, an <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a> chat bot.  Your bot should connect to the
+<a href="https://chat.ndlug.org">chat.ndlug.org</a> server and join the <code>#bots</code> channel.  It should be able to
+respond to at least one type of command or message.  The particular operation
+is up to you.</p>
+<p>To help you get started, here are some resources:</p>
+<ul>
+<li><a href="https://ircdocs.horse/specs/">Internet Relay Chat - Specifications</a></li>
+<li><a href="https://modern.ircdocs.horse/">Modern IRC Client Protocol</a></li>
+</ul>
+<div class="alert alert-warning">
+<h4 id="ndlug-irc"><i class="fa fa-linux"></i> NDLUG IRC<a class="headerlink" href="#ndlug-irc" title="Permanent link">&para;</a></h4>
+<p>To connect to the <a href="https://ndlug.org/">NDLUG</a> server yourself, you can use the following
+<strong>anonymous web client</strong>:</p>
+<blockquote>
+<p><a href="https://kiwiirc.com/nextclient/#ircs://chat.ndlug.org/bots">https://kiwiirc.com/nextclient/#ircs://chat.ndlug.org/bots</a></p>
+</blockquote>
+<p>Alternatively, if you wish to have access to more chat features such as
+history, you can register via <a href="https://regserv.ndlug.org/">regserv.ndlug.org</a>, which will setup a
+<a href="https://thelounge.chat/">Lounge</a> and <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a> account for you.</p>
+<p>The <a href="https://thelounge.chat/">Lounge</a> is a web-based <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a> client that you can use from any web
+browser, but you are free to connect to the <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a> server from any <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a>
+client such as <a href="https://weechat.org/">Weechat</a>, <a href="https://hexchat.github.io/">Hexchat</a>, or <a href="https://www.codeux.com/textual/">Textual</a> using <code>chat.ndlug.org</code> as
+the hostname and <code>6697</code> as the port.</p>
+</div>
+<p>A basic <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a> client session looks like this:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code>USER ircle-pbui 0 * :pbui&#39;s bot
+NICK ircle-pbui
+JOIN #bots
+PRIVMSG #bots :I&#39;ve fallen and I can&#39;t get up!
+</code></pre></div>
+
+<ol>
+<li>
+<p>The <code>USER</code> command sets the users real name and registers the user.</p>
+</li>
+<li>
+<p>The <code>NICK</code> command sets the users nickname.</p>
+</li>
+<li>
+<p>The <code>JOIN</code> command allows the user to join in a channel (in this case <code>#bots</code>).</p>
+</li>
+<li>
+<p>The <code>PRIVMSG</code> command allows the user to send a message (in this case to
+the channel <code>#bots</code>).</p>
+</li>
+</ol>
+<p>Here is a basic skeleton, <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework09/ircle.py">ircle.py</a>, that you can start with:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">os</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">socket</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">ssl</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Constants</span>
+
+HOST <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;chat.ndlug.org&#39;</span>
+PORT <span style="color: #666666">=</span> <span style="color: #666666">6697</span>
+NICK <span style="color: #666666">=</span> <span style="color: #BA2121">f&#39;ircle-</span><span style="color: #A45A77; font-weight: bold">{</span>os<span style="color: #666666">.</span>environ[<span style="color: #BA2121">&quot;USER&quot;</span>]<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">&#39;</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Functions</span>
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">ircle</span>():
+    <span style="color: #3D7B7B; font-style: italic"># Connect to IRC server</span>
+    ssl_context <span style="color: #666666">=</span> ssl<span style="color: #666666">.</span>create_default_context()
+    tcp_socket  <span style="color: #666666">=</span> socket<span style="color: #666666">.</span>create_connection((HOST, PORT))
+    ssl_socket  <span style="color: #666666">=</span> ssl_context<span style="color: #666666">.</span>wrap_socket(tcp_socket, server_hostname<span style="color: #666666">=</span>HOST)
+    ssl_stream  <span style="color: #666666">=</span> ssl_socket<span style="color: #666666">.</span>makefile(<span style="color: #BA2121">&#39;rw&#39;</span>)
+
+    <span style="color: #3D7B7B; font-style: italic"># Identify ourselves</span>
+    ssl_stream<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&#39;USER </span><span style="color: #A45A77; font-weight: bold">{</span>NICK<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> 0 * :</span><span style="color: #A45A77; font-weight: bold">{</span>NICK<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #AA5D1F; font-weight: bold">\r\n</span><span style="color: #BA2121">&#39;</span>)
+    ssl_stream<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&#39;NICK </span><span style="color: #A45A77; font-weight: bold">{</span>NICK<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #AA5D1F; font-weight: bold">\r\n</span><span style="color: #BA2121">&#39;</span>)
+    ssl_stream<span style="color: #666666">.</span>flush()
+
+    <span style="color: #3D7B7B; font-style: italic"># Join #bots channel</span>
+    ssl_stream<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&#39;JOIN #bots</span><span style="color: #AA5D1F; font-weight: bold">\r\n</span><span style="color: #BA2121">&#39;</span>)
+    ssl_stream<span style="color: #666666">.</span>flush()
+
+    <span style="color: #3D7B7B; font-style: italic"># Write message to channel</span>
+    ssl_stream<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&quot;PRIVMSG #bots :I&#39;ve fallen and I can&#39;t get up!</span><span style="color: #AA5D1F; font-weight: bold">\r\n</span><span style="color: #BA2121">&quot;</span>)
+    ssl_stream<span style="color: #666666">.</span>flush()
+
+    <span style="color: #3D7B7B; font-style: italic"># Read and display</span>
+    <span style="color: #008000; font-weight: bold">while</span> <span style="color: #008000; font-weight: bold">True</span>:
+        message <span style="color: #666666">=</span> ssl_stream<span style="color: #666666">.</span>readline()<span style="color: #666666">.</span>strip()
+        <span style="color: #008000">print</span>(message)
+
+<span style="color: #3D7B7B; font-style: italic"># Main Execution</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">main</span>():
+    ircle()
+
+<span style="color: #008000; font-weight: bold">if</span> <span style="color: #19177C">__name__</span> <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;__main__&#39;</span>:
+    main()
+</code></pre></div>
+
+<p>Alternatively, if you are interested in using the new <a href="https://docs.python.org/3/library/asyncio.html">asyncio</a> features of
+<a href="https://python.org">Python</a> 3 to perform event-driven and concurrent programming, you can
+use the following skeleton <a href="https://raw.githubusercontent.com/nd-cse-20289-sp23/cse-20289-sp23-assignments/master/homework09/ircle-async.py">ircle-async.py</a>:</p>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">asyncio</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">os</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Constants</span>
+
+HOST <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;chat.ndlug.org&#39;</span>
+PORT <span style="color: #666666">=</span> <span style="color: #666666">6697</span>
+NICK <span style="color: #666666">=</span> <span style="color: #BA2121">f&#39;ircle-</span><span style="color: #A45A77; font-weight: bold">{</span>os<span style="color: #666666">.</span>environ[<span style="color: #BA2121">&quot;USER&quot;</span>]<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">&#39;</span>
+
+<span style="color: #3D7B7B; font-style: italic"># Functions</span>
+
+<span style="color: #008000; font-weight: bold">async</span> <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">ircle</span>():
+    <span style="color: #3D7B7B; font-style: italic"># Connect to IRC server</span>
+    reader, writer <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">await</span> asyncio<span style="color: #666666">.</span>open_connection(HOST, PORT, ssl<span style="color: #666666">=</span><span style="color: #008000; font-weight: bold">True</span>)
+
+    <span style="color: #3D7B7B; font-style: italic"># Identify ourselves</span>
+    writer<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&#39;USER </span><span style="color: #A45A77; font-weight: bold">{</span>NICK<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> 0 * :</span><span style="color: #A45A77; font-weight: bold">{</span>NICK<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #AA5D1F; font-weight: bold">\r\n</span><span style="color: #BA2121">&#39;</span><span style="color: #666666">.</span>encode())
+    writer<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&#39;NICK </span><span style="color: #A45A77; font-weight: bold">{</span>NICK<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #AA5D1F; font-weight: bold">\r\n</span><span style="color: #BA2121">&#39;</span><span style="color: #666666">.</span>encode())
+    <span style="color: #008000; font-weight: bold">await</span> writer<span style="color: #666666">.</span>drain()
+
+    <span style="color: #3D7B7B; font-style: italic"># Join #bots channel</span>
+    writer<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&#39;JOIN #bots</span><span style="color: #AA5D1F; font-weight: bold">\r\n</span><span style="color: #BA2121">&#39;</span><span style="color: #666666">.</span>encode())
+    <span style="color: #008000; font-weight: bold">await</span> writer<span style="color: #666666">.</span>drain()
+
+    <span style="color: #3D7B7B; font-style: italic"># Write message to channel</span>
+    writer<span style="color: #666666">.</span>write(<span style="color: #BA2121">f&quot;PRIVMSG #bots :I&#39;ve fallen and I can&#39;t get up!</span><span style="color: #AA5D1F; font-weight: bold">\r\n</span><span style="color: #BA2121">&quot;</span><span style="color: #666666">.</span>encode())
+    <span style="color: #008000; font-weight: bold">await</span> writer<span style="color: #666666">.</span>drain()
+
+    <span style="color: #3D7B7B; font-style: italic"># Read and display</span>
+    <span style="color: #008000; font-weight: bold">while</span> <span style="color: #008000; font-weight: bold">True</span>:
+        message <span style="color: #666666">=</span> (<span style="color: #008000; font-weight: bold">await</span> reader<span style="color: #666666">.</span>readline())<span style="color: #666666">.</span>decode()<span style="color: #666666">.</span>strip()
+        <span style="color: #008000">print</span>(message)
+
+<span style="color: #3D7B7B; font-style: italic"># Main execution</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">main</span>():
+    asyncio<span style="color: #666666">.</span>run(ircle())
+
+<span style="color: #008000; font-weight: bold">if</span> <span style="color: #19177C">__name__</span> <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;__main__&#39;</span>:
+    main()
+</code></pre></div>
+
+<div class="alert alert-info">
+<h4 id="verification_1"><i class="fa fa-check"></i> Verification<a class="headerlink" href="#verification_1" title="Permanent link">&para;</a></h4>
+<p>To get credit for this Guru Point, you must have your <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a> bot join the
+<code>#bots</code> channel on the <a href="https://chat.ndlug.org">chat.ndlug.org</a> server and demonstrate its
+functionality yourself (by logging into the server with your own account) and
+showing the instructor.  You have up until <strong>Friday, April 29</strong> to verify
+your guru point.</p>
+</div>
+<h3 id="vps-1-point">VPS (1 Point)<a class="headerlink" href="#vps-1-point" title="Permanent link">&para;</a></h3>
+<p>For extra extra credit, you are to sign up for <a href="https://en.wikipedia.org/wiki/Virtual_private_server">virtual private server</a> on a
+service such as <a href="https://www.digitalocean.com/">Digital Ocean</a>, <a href="https://www.linode.com/">Linode</a>, <a href="https://aws.amazon.com/free/">Amazon Web Services</a>, <a href="https://azure.microsoft.com/en-us/free">Microsoft Azure</a>,
+<a href="https://cloud.google.com/">Google Cloud</a>, or <a href="https://vultr.com/">Vultr</a> and run the <code>loki.py</code> <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a> server from that <a href="https://en.wikipedia.org/wiki/Virtual_private_server">VPS</a>.</p>
+<div class="alert alert-success">
+<h4 id="github-student-developer-pack"><i class="fa fa-github"></i> GitHub Student Developer Pack<a class="headerlink" href="#github-student-developer-pack" title="Permanent link">&para;</a></h4>
+<p>As mentioned in class, you are eligible for the <a href="https://education.github.com/pack">GitHub Student Developer
+Pack</a>, which provides you with credits to <a href="https://www.digitalocean.com/">Digital Ocean</a> and <a href="https://azure.microsoft.com/en-us/free">Microsoft
+Azure</a> (among many other free goodies).</p>
+</div>
+<div class="alert alert-info">
+<h4 id="verification_2"><i class="fa fa-check"></i> Verification<a class="headerlink" href="#verification_2" title="Permanent link">&para;</a></h4>
+<p>To get credit for this Guru Point, you must show either the instructor or TA
+a demonstration of using <code>thor</code> to hammer <code>loki.py</code> running on your <a href="https://en.wikipedia.org/wiki/Virtual_private_server">VPS</a> (or
+attach a video / screenshot to your <strong>Pull Request</strong>).  You have up until
+<strong>Friday, April 29</strong> to verify your guru point.</p>
+</div>
+<h2 id="submission">Submission<a class="headerlink" href="#submission" title="Permanent link">&para;</a></h2>
+<p>To submit your assignment, please commit your work to the <code>homework09</code> folder
+in your <strong>assignments</strong> <a href="https://github.com">GitHub</a> repository.  Your <code>homework09</code> folder should
+only contain at the following files:</p>
+<ul>
+<li><code>Makefile</code></li>
+<li><code>README.md</code></li>
+<li><code>answers.json</code></li>
+<li><code>bin/loki.py</code></li>
+<li><code>bin/test_hammer.sh</code></li>
+<li><code>bin/test_socket.sh</code></li>
+<li><code>bin/test_request.sh</code></li>
+<li><code>bin/test_thor.sh</code></li>
+<li><code>bin/test_timestamp.sh</code></li>
+<li><code>include/hammer.h</code></li>
+<li><code>include/macros.h</code></li>
+<li><code>include/request.h</code></li>
+<li><code>include/socket.h</code></li>
+<li><code>include/timestamp.h</code></li>
+<li><code>lib/.gitkeep</code></li>
+<li><code>src/hammer.c</code></li>
+<li><code>src/request.c</code></li>
+<li><code>src/socket.c</code></li>
+<li><code>src/thor.c</code></li>
+<li><code>src/timestamp.c</code></li>
+<li><code>tests/unit_hammer.c</code></li>
+<li><code>tests/unit_request.c</code></li>
+<li><code>tests/unit_socket.c</code></li>
+<li><code>tests/unit_timestamp.c</code></li>
+</ul>
+<div class="alert alert-warning">
+<p><strong>Note</strong>: You must not modify any of the provided test scripts or unit tests.</p>
+</div>
+<div class="codehilite" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+<span style="color: #3D7B7B; font-style: italic"># BE SURE TO DO THE PREPARATION STEPS IN ACTIVITY 0</span>
+<span style="color: #3D7B7B; font-style: italic">#--------------------------------------------------</span>
+
+$ <span style="color: #008000">cd</span> homework09                           <span style="color: #3D7B7B; font-style: italic"># Go to Homework 09 directory</span>
+...
+$ git add Makefile                        <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add bin/*.sh bin/*.py               <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add include/*.h                     <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add lib/.gitkeep                    <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git add tests/*.c                       <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework09: import&quot;</span>      <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/timestamp.c                 <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework09: timestamp&quot;</span>   <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/socket.c                    <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework09: socket&quot;</span>      <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/request.c                   <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework09: request&quot;</span>     <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/hammer.c                    <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework09: hammer&quot;</span>      <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add src/thor.c                      <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework09: thor&quot;</span>        <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+...
+$ git add answers.json                    <span style="color: #3D7B7B; font-style: italic"># Mark changes for commit</span>
+$ git commit -m <span style="color: #BA2121">&quot;homework09: quiz&quot;</span>        <span style="color: #3D7B7B; font-style: italic"># Record changes</span>
+$ git push -u origin homework09           <span style="color: #3D7B7B; font-style: italic"># Push branch to GitHub</span>
+</code></pre></div>
+
+<div class="alert alert-danger">
+<h4 id="pull-request"><i class="fa fa-github"></i> Pull Request<a class="headerlink" href="#pull-request" title="Permanent link">&para;</a></h4>
+<p>Remember to create a <strong>Pull Request</strong> and assign the appropriate TA from the
+<a href="reading13_tas.html">Reading 13 TA List</a>.</p>
+<p><strong>DO NOT MERGE</strong> your own <strong>Pull Request</strong>.  The TAs use open <strong>Pull
+Requests</strong> to keep track of which assignments to grade.  Closing them
+yourself will cause a delay in grading and confuse the TAs.</p>
+</div>
+
+
+	    <div class="row">
+		<hr/>
+
+		<footer class="text-center">
+		    <p class="text-muted">
+		    <small>
+		    Built using
+		    <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>,
+		    <a href="http://fortawesome.github.com/Font-Awesome/">Font Awesome</a>, and
+		    <a href="http://www.python.org/">Python</a>.
+		    <br/>
+		    &copy; 2023 <a href="http://www.nd.edu">University of Notre Dame</a>
+		    </small>
+		    </p>
+		</footer>
+	    </div>
+
+	</div> <!-- /container -->
+
+	<!-- Bootstrap core JavaScript
+	================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	
+    </body>
+</html>
+
