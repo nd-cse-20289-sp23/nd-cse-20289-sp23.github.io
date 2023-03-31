@@ -287,6 +287,8 @@
         items:
           - name:       Slides 17
             link:       https://docs.google.com/presentation/d/1cNOHjP5PQl38C5-wzufaSN6NQIkSYW8_MwvGH1gYHEA/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=28315707-92df-4228-9e90-afd6012c4f67
 
       - date:           Sat 04/01
         topics:         C-String Library
