@@ -916,7 +916,7 @@ body:       |
   To connect to the [NDLUG] server yourself, you can use the following
   **anonymous web client**:
 
-  > [https://kiwiirc.com/nextclient/#ircs://chat.ndlug.org/bots](https://kiwiirc.com/nextclient/#ircs://chat.ndlug.org/bots)
+  > [https://gamja.ndlug.org/?channels=#bots](https://gamja.ndlug.org/?channels=#bots)
 
   Alternatively, if you wish to have access to more chat features such as
   history, you can register via [regserv.ndlug.org], which will setup a
