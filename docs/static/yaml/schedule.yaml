@@ -389,6 +389,7 @@
       - date:           Mon 05/01
         items:
           - name:       Checklist 03
+            link:       checklist03.html
 
       - date:           Wed 05/03
         topics:         TBD
