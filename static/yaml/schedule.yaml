@@ -335,6 +335,8 @@
         items:
           - name:       Slides 20
             link:       https://docs.google.com/presentation/d/103whnjGFTITMvXlVwNTq96RKJud3cF5CoTy0Gelgsuk/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=82102008-b164-47a1-8943-afe40126e70f
 
       - date:           Sat 04/15
         topics:         Detecting Duplicates
