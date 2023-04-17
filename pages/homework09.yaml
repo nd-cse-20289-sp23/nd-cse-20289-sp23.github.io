@@ -960,6 +960,7 @@ body:       |
       NICK = f'ircle-{os.environ["USER"]}'
 
       # Functions
+
       def ircle():
           # Connect to IRC server
           ssl_context = ssl.create_default_context()
