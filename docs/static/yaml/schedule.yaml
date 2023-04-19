@@ -358,6 +358,8 @@
         items:
           - name:       Slides 21
             link:       https://docs.google.com/presentation/d/1KnhAvE-1Ng3AeCOrI_xG2BlRVT_KouxBkmrslBCfkmM/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=3d490c61-7fc8-4844-8958-afe9012e954e
 
       - date:           Fri 04/21
         topics:         HTTP Server
