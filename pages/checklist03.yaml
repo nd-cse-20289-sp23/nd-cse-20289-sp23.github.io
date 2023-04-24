@@ -186,11 +186,25 @@ body:       |
 
     <div class="alert alert-success" markdown="1">
     #### <i class="fa fa-question"></i> Sample Question
-    Given a `list` of integers called `numbers`, produce a new `list` called
-    `fives` which consist only of the multiples of `5` by using `filter` and
-    `lambda`.
+    
+    - Given a `list` of integers called `numbers`, produce a new `list` called
+      `fives` which consist only of the multiples of `5` by using `filter` and
+      `lambda`.
 
-    Then, do the same thing using **list comprehensions**.
+        Then, do the same thing using **list comprehensions**.
+
+    - Write a program `isitdown.py` that uses [os.system] and [curl] to check
+      if a series of websites are down (ie. respond with successful [HTTP]
+      requests).
+
+            :::text
+            $ ./isitdown.py google.com nd.edu fake.website example.com
+            google.com UP
+            nd.edu UP
+            fake.website DOWN
+            example.com UP
+
+        Then, do the same thing using [requests].
 
     </div>
 
@@ -201,6 +215,10 @@ body:       |
     **quizzes** assocated with those exams.
 
     </div>
+
+    [os.system]:  https://docs.python.org/3/library/os.html
+    [curl]:       https://curl.se/docs/manpage.html
+    [requests]:   https://requests.readthedocs.io/en/latest/
 
     <hr>
 
