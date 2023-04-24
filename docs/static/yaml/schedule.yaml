@@ -377,6 +377,8 @@
         items:
           - name:       Slides 22
             link:       https://docs.google.com/presentation/d/1glXaM_BZPAdQECBgi4N04W5SXYfCiWCW7hCniocH5Eo/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=0f676325-f50c-4c68-8075-afee012c8c1e
 
       - date:           Wed 04/26
         topics:         Signals
@@ -398,6 +400,8 @@
   days:
       - date:           Mon 05/01
         items:
+          - name:       Slides R3
+            link:       https://docs.google.com/presentation/d/18Lwg4B3M1RQ-Mdiy5Mig_KaPGt8njVcYZOGLjtwThjA/edit?usp=sharing
           - name:       Checklist 03
             link:       checklist03.html
 
