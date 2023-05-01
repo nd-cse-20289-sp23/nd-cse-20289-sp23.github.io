@@ -406,8 +406,11 @@
         items:
           - name:       Slides R3
             link:       https://docs.google.com/presentation/d/18Lwg4B3M1RQ-Mdiy5Mig_KaPGt8njVcYZOGLjtwThjA/edit?usp=sharing
+          - name:       Panopto
+            link:       https://notredame.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=9681097e-fd6a-4797-ad9d-aff5012aac59
           - name:       Checklist 03
             link:       checklist03.html
+
 
       - date:           Wed 05/03
         topics:         TBD
